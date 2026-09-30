@@ -43,6 +43,28 @@ FIXTURE_COLUMNS = [
 ]
 
 
+def format_match_date(value):
+    """Format tanggal dari YYYYMMDD atau datetime ke format yang readable."""
+    if value is None or pd.isna(value):
+        return "-"
+
+    try:
+        if isinstance(value, str):
+            value = value.strip()
+            if len(value) == 8 and value.isdigit():
+                try:
+                    return pd.to_datetime(value, format="%Y%m%d").strftime("%d %b %Y")
+                except Exception:
+                    pass
+            try:
+                return pd.to_datetime(value, errors="coerce").strftime("%d %b %Y")
+            except Exception:
+                return value
+        return pd.to_datetime(value, errors="coerce").strftime("%d %b %Y")
+    except Exception:
+        return str(value)
+
+
 def load_models():
     models = {}
     for name in ["model_1x2_home", "model_1x2_away", "model_ou", "model_btts"]:
@@ -254,6 +276,7 @@ def predict_all(models, df: pd.DataFrame) -> list[dict]:
             "league": row["league"],
             "home": row["home_team"],
             "away": row["away_team"],
+            "date": row.get("date"),
             "predictions": preds,
         })
     return results
@@ -290,6 +313,7 @@ def filter_and_classify(results: list[dict]) -> tuple[list, list, list]:
             item = {
                 "match_id": match["match_id"], "league": liga,
                 "home": match["home"], "away": match["away"],
+                "date": match.get("date"),
                 "market": p["market"], "prediction": p["prediction"],
                 "confidence": round(conf, 4),
                 "odds": round(float(odds), 2),
@@ -332,6 +356,7 @@ def render_txt(tier_s, tier_a, tier_b, total_scan: int) -> str:
         lines.append("-" * 60)
         for i, it in enumerate(items, 1):
             lines.append(f"{i}. [{it['league']}] {it['home']} vs {it['away']}")
+            lines.append(f"   Tanggal   : {format_match_date(it.get('date'))}")
             lines.append(f"   Match ID  : {it['match_id']}")
             lines.append(f"   Market    : {it['market']} — {it['prediction']}")
             lines.append(f"   Conf      : {it['confidence']:.0%} | Odds: {it['odds']} | Value: {it['value']:+.2%}")
@@ -361,7 +386,10 @@ def save_tracking(tier_s, tier_a, tier_b):
     rows = []
     for i, it in enumerate(all_items, 1):
         rows.append({
-            "id": i, "tanggal": today, "match_id": it["match_id"],
+            "id": i,
+            "tanggal": today,
+            "tanggal_match": format_match_date(it.get("date")),
+            "match_id": it["match_id"],
             "liga": it["league"], "home": it["home"], "away": it["away"],
             "market": it["market"], "prediksi": it["prediction"],
             "confidence": it["confidence"], "odds": it["odds"],
