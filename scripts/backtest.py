@@ -1,6 +1,6 @@
 """
 backtest.py — Backtest 3 model.
-Versi 4: bankroll simulation pakai stake flat Rp 10.000 (realistis).
+Versi 5: Support ensemble model dict (XGB + LGBM dengan bobot).
 """
 import sys
 from pathlib import Path
@@ -19,7 +19,7 @@ from train import FEATURES
 
 def load_models():
     models = {}
-    for name in ["model_1x2", "model_ou", "model_btts"]:
+    for name in ["model_1x2_home", "model_1x2_away", "model_ou", "model_btts"]:
         p = path(f"models/{name}.pkl")
         if not p.exists():
             raise FileNotFoundError(f"Model tidak ada: {p}")
@@ -40,23 +40,62 @@ def load_test_data() -> pd.DataFrame:
     return df
 
 
+def predict_with_ensemble(model_dict, X, task="binary"):
+    """Hitung prob dari ensemble XGB + LGBM dengan bobot."""
+    if not isinstance(model_dict, dict) or "xgb" not in model_dict or "lgbm" not in model_dict:
+        raise TypeError(f"Model bukan ensemble dict: {type(model_dict)}")
+
+    xgb = model_dict["xgb"]
+    lgbm = model_dict["lgbm"]
+    weights = model_dict.get("weights", {"xgb": 0.5, "lgbm": 0.5})
+
+    xgb_prob = xgb.predict_proba(X)
+    lgbm_prob = lgbm.predict_proba(X)
+    prob = weights["xgb"] * xgb_prob + weights["lgbm"] * lgbm_prob
+
+    if task == "binary":
+        pred = (prob[:, 1] > 0.5).astype(int)
+        return prob, pred
+
+    pred = np.argmax(prob, axis=1)
+    return prob, pred
+
+
 def predict_all(models, df: pd.DataFrame) -> pd.DataFrame:
     cols = [c for c in FEATURES if c in df.columns]
     X = df[cols].astype(float)
 
-    prob_1x2 = models["model_1x2"].predict_proba(X)
-    df["prob_H"] = prob_1x2[:, 0]
-    df["pred_1x2"] = np.argmax(prob_1x2, axis=1)
-    df["conf_1x2"] = np.max(prob_1x2, axis=1)
+    # 1X2 Home Win
+    model_home = models["model_1x2_home"]
+    prob_home, pred_home = predict_with_ensemble(model_home, X, task="binary")
+    df["prob_H"] = prob_home[:, 1]
+    df["pred_home_win"] = pred_home
+    df["conf_home_win"] = np.max(prob_home, axis=1)
 
-    prob_ou = models["model_ou"].predict_proba(X)
+    # 1X2 Away Win
+    model_away = models["model_1x2_away"]
+    prob_away, pred_away = predict_with_ensemble(model_away, X, task="binary")
+    df["prob_A"] = prob_away[:, 1]
+    df["pred_away_win"] = pred_away
+    df["conf_away_win"] = np.max(prob_away, axis=1)
+
+    # O/U 2.5
+    model_ou = models["model_ou"]
+    prob_ou, pred_ou = predict_with_ensemble(model_ou, X, task="binary")
     df["prob_over_2_5"] = prob_ou[:, 1]
-    df["pred_ou"] = (prob_ou[:, 1] > 0.5).astype(int)
+    df["pred_ou"] = pred_ou
     df["conf_ou"] = np.max(prob_ou, axis=1)
 
-    prob_btts = models["model_btts"].predict_proba(X)
-    df["pred_btts"] = (prob_btts[:, 1] > 0.5).astype(int)
+    # BTTS
+    model_btts = models["model_btts"]
+    prob_btts, pred_btts = predict_with_ensemble(model_btts, X, task="binary")
+    df["prob_btts"] = prob_btts[:, 1]
+    df["pred_btts"] = pred_btts
     df["conf_btts"] = np.max(prob_btts, axis=1)
+
+    # Untuk kompatibilitas dengan kode lama (pred_1x2, conf_1x2)
+    df["pred_1x2"] = np.where(df["prob_H"] >= df["prob_A"], 0, 2)
+    df["conf_1x2"] = np.maximum(df["conf_home_win"], df["conf_away_win"])
 
     return df
 
@@ -127,7 +166,6 @@ def bankroll_simulation(df, start=1_000_000, stake_flat=10_000, n_legs=3):
         return {"start": start, "final": start, "roi": 0, "max_drawdown": 0,
                 "sharpe": 0, "n_periods": 0}, pd.DataFrame()
 
-    # Filter odds realistis per leg (1.2 - 5.0)
     valid = df["odds_home"].between(1.2, 5.0)
     df = df[valid].copy()
     if df.empty:
@@ -143,18 +181,14 @@ def bankroll_simulation(df, start=1_000_000, stake_flat=10_000, n_legs=3):
             continue
 
         top = group.nlargest(n_legs, "conf_1x2")
-
-        # Filter: total odds parlay max 10.0 (realistis)
         parlay_odds = top["odds_home"].prod()
         if parlay_odds > 10.0:
             continue
 
-        # Stake FLAT (bukan % dari bankroll)
         stake = min(stake_flat, bankroll)
         if stake <= 0:
             break
 
-        # Cek apakah semua leg menang
         wins = (top["pred_1x2"] == top["result_enc"]).all()
 
         if wins:
