@@ -1,0 +1,32 @@
+
+# 2026-09-30 19:29:08.369872
++N
+
+# 2026-09-30 19:29:19.718448
++tolong fix script saya 
+
+# 2026-09-30 19:30:28.742717
++audit apakah karna beberapa menu tidak bekerja
+
+# 2026-09-30 19:33:06.135171
++Input: 14802 baris, 27 kolom
++/root/parlay-system/scripts/clean_data.py:54: Pandas4Warning: For backward compatibility, 'str' dtypes are included by select_dtypes when 'object' dtype is specified. This behavior is deprecated and will be removed in a future version. Explicitly pass 'str' to `include` to select them, or to `exclude` to remove them and silence this warning.
++See https://pandas.pydata.org/docs/user_guide/migration-3-strings.html#string-migration-select-dtypes for details on how to write code that works with pandas 2 and 3.
++  cat_cols = df.select_dtypes(include=["object"]).columns
++
++✓ Output: /root/parlay-system/data/processed/matches_clean.csv
++✓ 14802 baris, 27 kolom
++✓ Rentang: 2020-08-21 00:00:00 → 2025-05-25 00:00:00
++
+
+# 2026-09-30 19:33:10.399535
++N
+
+# 2026-09-30 19:33:52.433426
++ls
+
+# 2026-09-30 19:34:07.420836
++exit
+
+# 2026-09-30 19:34:18.869928
++/exit

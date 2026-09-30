@@ -1,0 +1,65 @@
+============================================================
+   PREDIKSI PARLAY — 30 September 2026
+   Total scan: 3 laga
+   Lolos seleksi: 7 market
+============================================================
+
+🏆 LAPIS S — PREMIUM (2 market)
+------------------------------------------------------------
+1. [LaLiga] Elche vs Celta Vigo
+   Match ID  : LaLiga_20261011_Elche_CeltaVigo
+   Market    : O/U 3.5 — Under
+   Conf      : 75% | Odds: 1.76 | Value: +32.16%
+   Skor      : 0.4054 (dasar 0.5792 × bobot 0.70)
+   Stake     : Rp 10,000
+
+2. [EPL] Hull City vs Everton
+   Match ID  : EPL_20261011_HullCity_Everton
+   Market    : O/U 3.5 — Under
+   Conf      : 77% | Odds: 1.71 | Value: +32.25%
+   Skor      : 0.3558 (dasar 0.5930 × bobot 0.60)
+   Stake     : Rp 10,000
+
+✅ LAPIS A — LOLOS (2 market)
+------------------------------------------------------------
+1. [EPL] Crystal Palace vs Nottingham Forest
+   Match ID  : EPL_20261011_CrystalPalace_NottinghamForest
+   Market    : O/U 1.5 — Over
+   Conf      : 69% | Odds: 2.02 | Value: +39.78%
+   Skor      : 0.3446 (dasar 0.5743 × bobot 0.60)
+   Stake     : Rp 10,000
+
+2. [EPL] Crystal Palace vs Nottingham Forest
+   Match ID  : EPL_20261011_CrystalPalace_NottinghamForest
+   Market    : O/U 3.5 — Under
+   Conf      : 71% | Odds: 1.77 | Value: +25.32%
+   Skor      : 0.3156 (dasar 0.5261 × bobot 0.60)
+   Stake     : Rp 10,000
+
+🎲 LAPIS B — HIBURAN (3 market)
+------------------------------------------------------------
+1. [LaLiga] Elche vs Celta Vigo
+   Match ID  : LaLiga_20261011_Elche_CeltaVigo
+   Market    : O/U 1.5 — Over
+   Conf      : 65% | Odds: 2.03 | Value: +31.77%
+   Skor      : 0.3616 (dasar 0.5165 × bobot 0.70)
+   Stake     : Rp 10,000
+
+2. [EPL] Hull City vs Everton
+   Match ID  : EPL_20261011_HullCity_Everton
+   Market    : 1X2 — Home Win
+   Conf      : 45% | Odds: 3.65 | Value: +62.97%
+   Skor      : 0.3119 (dasar 0.5198 × bobot 0.60)
+   Stake     : Rp 10,000
+
+3. [EPL] Hull City vs Everton
+   Match ID  : EPL_20261011_HullCity_Everton
+   Market    : O/U 1.5 — Over
+   Conf      : 63% | Odds: 2.11 | Value: +32.21%
+   Skor      : 0.3029 (dasar 0.5048 × bobot 0.60)
+   Stake     : Rp 10,000
+
+============================================================
+TOTAL STAKE: Rp 70,000 (maks Rp 100,000)
+Catatan: Skor sudah dibobot per liga. AI hanya penyaring awal.
+============================================================

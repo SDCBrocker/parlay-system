@@ -1,0 +1,8 @@
+id,tanggal,match_id,liga,home,away,market,prediksi,confidence,odds,value,skor,lapis,stake_rekomendasi,keputusan_saya,stake_saya,hasil,profit,catatan
+1,2026-09-30,LaLiga_20261011_Elche_CeltaVigo,LaLiga,Elche,Celta Vigo,O/U 3.5,Under,0.7509,1.76,0.3216,0.4054,S,10000,,,,,
+2,2026-09-30,EPL_20261011_HullCity_Everton,EPL,Hull City,Everton,O/U 3.5,Under,0.7734,1.71,0.3225,0.3558,S,10000,,,,,
+3,2026-09-30,EPL_20261011_CrystalPalace_NottinghamForest,EPL,Crystal Palace,Nottingham Forest,O/U 1.5,Over,0.692,2.02,0.3978,0.3446,A,10000,,,,,
+4,2026-09-30,EPL_20261011_CrystalPalace_NottinghamForest,EPL,Crystal Palace,Nottingham Forest,O/U 3.5,Under,0.708,1.77,0.2532,0.3156,A,10000,,,,,
+5,2026-09-30,LaLiga_20261011_Elche_CeltaVigo,LaLiga,Elche,Celta Vigo,O/U 1.5,Over,0.6491,2.03,0.3177,0.3616,B,10000,,,,,
+6,2026-09-30,EPL_20261011_HullCity_Everton,EPL,Hull City,Everton,1X2,Home Win,0.4465,3.65,0.6297,0.3119,B,10000,,,,,
+7,2026-09-30,EPL_20261011_HullCity_Everton,EPL,Hull City,Everton,O/U 1.5,Over,0.6266,2.11,0.3221,0.3029,B,10000,,,,,

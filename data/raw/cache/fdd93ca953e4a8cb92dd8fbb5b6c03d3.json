@@ -1,0 +1,1219 @@
+{
+  "data": [
+    {
+      "id": "match_fmb_bra2_2026_20261002_novorizontino_goias",
+      "competitionId": "comp_serie_b_bra",
+      "season": "2026",
+      "round": "Round 31",
+      "kickoffAt": "2026-10-02T00:00:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_novorizontino_bra",
+        "name": "Novorizontino",
+        "shortName": "Novorizontino",
+        "code": "NOV",
+        "logoUrl": null,
+        "country": "Brazil",
+        "competitionId": "comp_serie_b_bra",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_bra2_novorizontino"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_goias_bra",
+        "name": "Goi\u00e1s",
+        "shortName": "Goi\u00e1s",
+        "code": "GS",
+        "logoUrl": null,
+        "country": "Brazil",
+        "competitionId": "comp_serie_b_bra",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_bra2_goias"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:06:34.502Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5190746"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_col1_2026_20261002_internacional_de_bogota_once_caldas",
+      "competitionId": "comp_primera_a_col",
+      "season": "2026",
+      "round": "Round Clausura - Round 17",
+      "kickoffAt": "2026-10-02T01:00:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_internacional_bogota_colo",
+        "name": "Internacional de Bogot\u00e1",
+        "shortName": "Internacional de Bogot\u00e1",
+        "code": "IDB",
+        "logoUrl": null,
+        "country": "Colombia",
+        "competitionId": "comp_primera_a_col",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_col1_internacional_de_bogota"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_once_caldas_colo",
+        "name": "Once Caldas",
+        "shortName": "Once Caldas",
+        "code": "OC",
+        "logoUrl": null,
+        "country": "Colombia",
+        "competitionId": "comp_primera_a_col",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_col1_once_caldas"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:16:15.603Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "1000014215"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_kazakhstan_moldova",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T14:00:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_kazakhstan_eur",
+        "name": "Kazakhstan",
+        "shortName": "Kazakhstan",
+        "code": "KAZ",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_kazakhstan"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_moldova_eur",
+        "name": "Moldova",
+        "shortName": "Moldova",
+        "code": "MOL",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_moldova"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181937"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_cyprus_armenia",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T16:00:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_cyprus_eur",
+        "name": "Cyprus",
+        "shortName": "Cyprus",
+        "code": "CYP",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_cyprus"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_armenia_eur",
+        "name": "Armenia",
+        "shortName": "Armenia",
+        "code": "ARM",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_armenia"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181925"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_latvia_montenegro",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T16:00:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_latvia_eur",
+        "name": "Latvia",
+        "shortName": "Latvia",
+        "code": "LAT",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_latvia"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_montenegro_eur",
+        "name": "Montenegro",
+        "shortName": "Montenegro",
+        "code": "MON",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_montenegro"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181926"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_belgium_turkiye",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T18:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_belgium_eur",
+        "name": "Belgium",
+        "shortName": "Belgium",
+        "code": "BEL",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_belgium"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_turkiye_eur",
+        "name": "Turkiye",
+        "shortName": "Turkiye",
+        "code": "TUR",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_turkiye"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181792"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_france_italy",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T18:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_france_eur",
+        "name": "France",
+        "shortName": "France",
+        "code": "FRA",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_france"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_italy_eur",
+        "name": "Italy",
+        "shortName": "Italy",
+        "code": "ITA",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_italy"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181793"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_bosnia_and_herzegovina_sweden",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T18:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_bosnia_and_herzegovina_eur",
+        "name": "Bosnia and Herzegovina",
+        "shortName": "Bosnia and Herzegovina",
+        "code": "BAH",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_bosnia_and_herzegovina"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_sweden_eur",
+        "name": "Sweden",
+        "shortName": "Sweden",
+        "code": "SWE",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_sweden"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181841"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_hungary_georgia",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T18:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_hungary_eur",
+        "name": "Hungary",
+        "shortName": "Hungary",
+        "code": "HUN",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_hungary"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_georgia_eur",
+        "name": "Georgia",
+        "shortName": "Georgia",
+        "code": "GEO",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_georgia"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181804"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_poland_romania",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T18:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_poland_eur",
+        "name": "Poland",
+        "shortName": "Poland",
+        "code": "POL",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_poland"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_romania_eur",
+        "name": "Romania",
+        "shortName": "Romania",
+        "code": "ROM",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_romania"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181842"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_ukraine_northern_ireland",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T18:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_ukraine_eur",
+        "name": "Ukraine",
+        "shortName": "Ukraine",
+        "code": "UKR",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_ukraine"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_northern_ireland_eur",
+        "name": "Northern Ireland",
+        "shortName": "Northern Ireland",
+        "code": "NI",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_northern_ireland"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181805"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_unl_2026-27_20261002_faroe_islands_slovakia",
+      "competitionId": "comp_uefa_nations_league",
+      "season": "2026/27",
+      "round": "Round 3",
+      "kickoffAt": "2026-10-02T18:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_faroe_islands_eur",
+        "name": "Faroe Islands",
+        "shortName": "Faroe Islands",
+        "code": "FI",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_faroe_islands"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_slovakia_eur",
+        "name": "Slovakia",
+        "shortName": "Slovakia",
+        "code": "SLO",
+        "logoUrl": null,
+        "country": "Europe",
+        "competitionId": "comp_uefa_nations_league",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_unl_slovakia"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:15.936Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5181938"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_irl1_2026_20261002_dundalk_bohemian_fc",
+      "competitionId": "comp_premier_division_irl",
+      "season": "2026",
+      "round": "Round 33",
+      "kickoffAt": "2026-10-02T18:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_dundalk_irel",
+        "name": "Dundalk",
+        "shortName": "Dundalk",
+        "code": "DUN",
+        "logoUrl": null,
+        "country": "Ireland",
+        "competitionId": "comp_premier_division_irl",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_irl1_dundalk"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_bohemian_irel",
+        "name": "Bohemian FC",
+        "shortName": "Bohemian FC",
+        "code": "BF",
+        "logoUrl": null,
+        "country": "Ireland",
+        "competitionId": "comp_premier_division_irl",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_irl1_bohemian_fc"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:20:17.457Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5100973"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_ned2_2026-27_20261002_helmond_sport_heracles",
+      "competitionId": "comp_eerste_divisie_nl",
+      "season": "2026/27",
+      "round": "Round 9",
+      "kickoffAt": "2026-10-02T19:00:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_helmond_sport_nl",
+        "name": "Helmond Sport",
+        "shortName": "Helmond Sport",
+        "code": "HS",
+        "logoUrl": null,
+        "country": "Netherlands",
+        "competitionId": "comp_eerste_divisie_nl",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_ned2_helmond_sport"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_heracles_nl",
+        "name": "Heracles",
+        "shortName": "Heracles",
+        "code": "HER",
+        "logoUrl": null,
+        "country": "Netherlands",
+        "competitionId": "comp_eerste_divisie_nl",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_ned2_heracles"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:05:16.414Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5832887"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_arg2_2026_20261002_ferro_carril_oeste_deportivo_madryn",
+      "competitionId": "comp_primera_nacional_arg",
+      "season": "2026",
+      "round": "Round 32",
+      "kickoffAt": "2026-10-02T22:00:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_ferro_carril_oeste_arg",
+        "name": "Ferro Carril Oeste",
+        "shortName": "Ferro Carril Oeste",
+        "code": "FCO",
+        "logoUrl": null,
+        "country": "Argentina",
+        "competitionId": "comp_primera_nacional_arg",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_arg2_ferro_carril_oeste"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_madryn_arg",
+        "name": "Deportivo Madryn",
+        "shortName": "Deportivo Madryn",
+        "code": "DM",
+        "logoUrl": null,
+        "country": "Argentina",
+        "competitionId": "comp_primera_nacional_arg",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_arg2_deportivo_madryn"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:11:18.604Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5113485"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_bra2_2026_20261002_sao_bernardo_crb",
+      "competitionId": "comp_serie_b_bra",
+      "season": "2026",
+      "round": "Round 31",
+      "kickoffAt": "2026-10-02T22:30:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_sao_bernardo_bra",
+        "name": "S\u00e3o Bernardo",
+        "shortName": "S\u00e3o Bernardo",
+        "code": "SOB",
+        "logoUrl": null,
+        "country": "Brazil",
+        "competitionId": "comp_serie_b_bra",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_bra2_sao_bernardo"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_crb_bra",
+        "name": "CRB",
+        "shortName": "CRB",
+        "code": "CRB",
+        "logoUrl": null,
+        "country": "Brazil",
+        "competitionId": "comp_serie_b_bra",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_bra2_crb"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:06:34.502Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5190740"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_chi1_2026_20261002_universidad_de_concepcion_huachipato",
+      "competitionId": "comp_primera_division_chi",
+      "season": "2026",
+      "round": "Round 23",
+      "kickoffAt": "2026-10-02T23:00:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_universidad_concepcion_chil",
+        "name": "Universidad de Concepci\u00f3n",
+        "shortName": "Universidad de Concepci\u00f3n",
+        "code": "UDC",
+        "logoUrl": null,
+        "country": "Chile",
+        "competitionId": "comp_primera_division_chi",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_chi1_universidad_de_concepcion"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_huachipato_chil",
+        "name": "Huachipato",
+        "shortName": "Huachipato",
+        "code": "HUA",
+        "logoUrl": null,
+        "country": "Chile",
+        "competitionId": "comp_primera_division_chi",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_chi1_huachipato"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:12:16.326Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "1000013235"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_bra2_2026_20261002_londrina_criciuma",
+      "competitionId": "comp_serie_b_bra",
+      "season": "2026",
+      "round": "Round 31",
+      "kickoffAt": "2026-10-02T23:30:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_londrina_bra",
+        "name": "Londrina",
+        "shortName": "Londrina",
+        "code": "LON",
+        "logoUrl": null,
+        "country": "Brazil",
+        "competitionId": "comp_serie_b_bra",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_bra2_londrina"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_criciuma_bra",
+        "name": "Crici\u00fama",
+        "shortName": "Crici\u00fama",
+        "code": "CM",
+        "logoUrl": null,
+        "country": "Brazil",
+        "competitionId": "comp_serie_b_bra",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_bra2_criciuma"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:06:34.502Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5190742"
+        }
+      ]
+    },
+    {
+      "id": "match_fmb_bra2_2026_20261002_juventude_operario_pr",
+      "competitionId": "comp_serie_b_bra",
+      "season": "2026",
+      "round": "Round 31",
+      "kickoffAt": "2026-10-02T23:45:00Z",
+      "kickoffTimeKnown": true,
+      "status": "scheduled",
+      "venue": null,
+      "homeTeam": {
+        "id": "team_juventude_bra",
+        "name": "Juventude",
+        "shortName": "Juventude",
+        "code": "JUV",
+        "logoUrl": null,
+        "country": "Brazil",
+        "competitionId": "comp_serie_b_bra",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_bra2_juventude"
+          }
+        ]
+      },
+      "awayTeam": {
+        "id": "team_operario_pr_bra",
+        "name": "Oper\u00e1rio-PR",
+        "shortName": "Oper\u00e1rio-PR",
+        "code": "ORP",
+        "logoUrl": null,
+        "country": "Brazil",
+        "competitionId": "comp_serie_b_bra",
+        "sourceRefs": [
+          {
+            "source": "fotmob",
+            "id": "team_fmb_bra2_operario_pr"
+          }
+        ]
+      },
+      "score": {
+        "home": null,
+        "away": null
+      },
+      "minute": null,
+      "addedTime": null,
+      "period": null,
+      "updatedAt": "2026-09-30T09:06:34.502Z",
+      "sourceRefs": [
+        {
+          "source": "fotmob",
+          "id": "5190748"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "request_id": "req_5db7fd4ef35e4cf5bd",
+    "generated_at": "2026-09-30T09:23:59.903Z",
+    "environment": "beta",
+    "count": 19,
+    "total_count": 19,
+    "scope": {
+      "mode": "default_competitions",
+      "partial": true,
+      "competitions_searched": [
+        "comp_premier_league_eng",
+        "comp_laliga_es",
+        "comp_serie_a_it",
+        "comp_bundesliga_de",
+        "comp_ligue_1_fr",
+        "comp_dfb_pokal_de",
+        "comp_fa_cup_eng",
+        "comp_copa_del_rey_es",
+        "comp_coppa_italia_it",
+        "comp_coupe_de_france_fr",
+        "comp_uefa_champions_league",
+        "comp_uefa_europa_league",
+        "comp_uefa_conference_league",
+        "comp_copa_libertadores",
+        "comp_copa_sudamericana",
+        "comp_afc_champions_league",
+        "comp_fifa_world_cup",
+        "comp_uefa_nations_league",
+        "comp_superliga_ro",
+        "comp_liga_2_ro",
+        "comp_cupa_romaniei_ro",
+        "comp_eredivisie_nl",
+        "comp_eerste_divisie_nl",
+        "comp_primeira_liga_pt",
+        "comp_segunda_liga_pt",
+        "comp_super_lig_tr",
+        "comp_pro_league_be",
+        "comp_scottish_prem_sco",
+        "comp_championship_eng",
+        "comp_league_one_eng",
+        "comp_league_two_eng",
+        "comp_2_bundesliga_de",
+        "comp_3_liga_de",
+        "comp_segunda_es",
+        "comp_serie_b_it",
+        "comp_ligue_2_fr",
+        "comp_bundesliga_aut",
+        "comp_superliga_dnk",
+        "comp_ekstraklasa_pol",
+        "comp_super_league_grc",
+        "comp_super_league_sui",
+        "comp_allsvenskan_swe",
+        "comp_eliteserien_nor",
+        "comp_hnl_cro",
+        "comp_parva_liga_bul",
+        "comp_nike_liga_svk",
+        "comp_prva_liga_svn",
+        "comp_premijer_liga_bih",
+        "comp_kategoria_superiore_alb",
+        "comp_besta_deild_isl",
+        "comp_czech_first_league_cze",
+        "comp_nb_1_hun",
+        "comp_premier_league_ukr",
+        "comp_superliga_srb",
+        "comp_first_division_cyp",
+        "comp_premier_division_irl",
+        "comp_veikkausliiga_fin",
+        "comp_mls_usa",
+        "comp_usl_championship_usa",
+        "comp_brasileirao_bra",
+        "comp_serie_b_bra",
+        "comp_copa_do_brasil_bra",
+        "comp_liga_profesional_arg",
+        "comp_primera_nacional_arg",
+        "comp_liga_mx_mex",
+        "comp_primera_a_col",
+        "comp_primera_division_chi",
+        "comp_primera_division_uru",
+        "comp_ligapro_ecu",
+        "comp_liga_1_per",
+        "comp_primera_division_par",
+        "comp_j1_league_jpn",
+        "comp_j2_league_jpn",
+        "comp_k_league_1_kor",
+        "comp_a_league_aus",
+        "comp_chinese_super_league_chn",
+        "comp_indian_super_league_ind",
+        "comp_qatar_stars_league_qat",
+        "comp_uae_pro_league_uae",
+        "comp_saudi_pro_league_sau",
+        "comp_egyptian_prem_egy",
+        "comp_botola_pro_mar",
+        "comp_psl_rsa",
+        "comp_canadian_premier_league_can",
+        "comp_primera_division_crc",
+        "comp_primera_division_bol",
+        "comp_primera_division_ven",
+        "comp_persian_gulf_league_irn",
+        "comp_super_league_uzb",
+        "comp_thai_league_1_tha",
+        "comp_stars_league_irq",
+        "comp_ligue_1_dza",
+        "comp_ligue_1_tun",
+        "comp_ligat_ha_al_isr",
+        "comp_premier_league_kaz",
+        "comp_npfl_nga",
+        "comp_premiership_nir",
+        "comp_v_league_vie",
+        "comp_super_league_idn",
+        "comp_concacaf_champions_cup",
+        "comp_premier_league_arm",
+        "comp_premier_league_aze",
+        "comp_premier_league_blr",
+        "comp_premium_liiga_est",
+        "comp_erovnuli_liga_geo",
+        "comp_virsliga_lva",
+        "comp_a_lyga_ltu",
+        "comp_national_division_lux",
+        "comp_prva_liga_mkd",
+        "comp_national_division_mda",
+        "comp_1_cfl_mne",
+        "comp_cymru_premier_wal",
+        "comp_premier_league_fro",
+        "comp_premier_league_rus",
+        "comp_premier_league_mlt",
+        "comp_primera_divisio_and",
+        "comp_campionato_sammarinese_smr",
+        "comp_football_league_gib",
+        "comp_superliga_kos",
+        "comp_cup_lie"
+      ],
+      "competitions_total": 120
+    },
+    "unavailable": [
+      {
+        "competition_id": "comp_fa_cup_eng",
+        "reason": "season_not_published_upstream",
+        "message": "The 2026/27 season is not published upstream yet (latest available: 2025/2026). Matches are withheld rather than served from the previous edition.",
+        "configured_season": "2026/27",
+        "upstream_season": "2025/2026"
+      },
+      {
+        "competition_id": "comp_copa_del_rey_es",
+        "reason": "season_not_published_upstream",
+        "message": "The 2026/27 season is not published upstream yet (latest available: 2025/2026). Matches are withheld rather than served from the previous edition.",
+        "configured_season": "2026/27",
+        "upstream_season": "2025/2026"
+      },
+      {
+        "competition_id": "comp_coupe_de_france_fr",
+        "reason": "season_not_published_upstream",
+        "message": "The 2026/27 season is not published upstream yet (latest available: 2025/2026). Matches are withheld rather than served from the previous edition.",
+        "configured_season": "2026/27",
+        "upstream_season": "2025/2026"
+      },
+      {
+        "competition_id": "comp_indian_super_league_ind",
+        "reason": "season_not_published_upstream",
+        "message": "The 2025/26 season is not published upstream yet (latest available: 2026/2027). Matches are withheld rather than served from the previous edition.",
+        "configured_season": "2025/26",
+        "upstream_season": "2026/2027"
+      }
+    ],
+    "filters": {
+      "date": "2026-10-02"
+    },
+    "access": {
+      "authenticated": true,
+      "plan": "starter",
+      "keyId": "key_cad81172-da2d-4d7d-a46e-5e3726ad63ae",
+      "quota": 5000,
+      "used": 13,
+      "remaining": 4987,
+      "period": "2026-09"
+    },
+    "preview_limit": null,
+    "pagination": {
+      "limit": 50,
+      "next_cursor": null
+    },
+    "sources": [
+      {
+        "name": "FotMob",
+        "license": "Unlicensed-Beta (owner-approved factual data)",
+        "url": "https://www.fotmob.com/",
+        "coverage": "Fixtures, results and live scores for cups and leagues without an open CSV feed (domestic cups, UEL, Libertadores, Sudamericana, AFC Champions League, Croatia, Hungary, Serbia, Ukraine, Egypt, Qatar, UAE)"
+      }
+    ]
+  }
+}

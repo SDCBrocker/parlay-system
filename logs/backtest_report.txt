@@ -1,0 +1,36 @@
+=== BACKTEST REPORT ===
+
+Test set: 2961 baris
+
+1X2:
+    band   n  accuracy
+ 50%-60% 670    0.4657
+ 60%-70% 385    0.5481
+ 70%-80% 235    0.6170
+80%-101% 178    0.6685
+
+O/U 2.5:
+    band    n  accuracy
+ 50%-60% 1640    0.5152
+ 60%-70%  800    0.5575
+ 70%-80%  377    0.5279
+80%-101%  144    0.5625
+
+BTTS:
+    band    n  accuracy
+ 50%-60% 1787    0.5064
+ 60%-70%  872    0.5206
+ 70%-80%  263    0.5513
+80%-101%   39    0.7179
+
+Value Betting:
+  1X2_Home: {'n_bets': 835, 'win_rate': 0.4012, 'roi': -0.1221, 'total_profit_unit': -101.93}
+  O/U_2.5_Over: {'n_bets': 1035, 'win_rate': 0.486, 'roi': -0.0839, 'total_profit_unit': -86.86}
+
+Bankroll:
+  start: 1000000
+  final: 1154470.93
+  roi: 0.1545
+  max_drawdown: -0.1521
+  sharpe: 0.9289
+  n_periods: 130

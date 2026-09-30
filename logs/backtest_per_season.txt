@@ -1,0 +1,5 @@
+=== BACKTEST PER MUSIM ===
+
+season    n  acc_1x2  acc_ou  acc_btts  n_bets  profit_unit     roi
+  2023   45   0.4667  0.6444    0.5556       8        -2.07 -0.2588
+  2024 2916   0.4643  0.5154    0.5233     794      -123.92 -0.1561

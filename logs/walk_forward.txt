@@ -1,0 +1,5 @@
+=== WALK-FORWARD VALIDATION ===
+
+ test_year  n_train  n_test  acc_home  acc_away  acc_ou  acc_btts
+      2023     7288    3113    0.6113     0.672  0.5426    0.5156
+      2024    10401    2883    0.6285     0.692  0.5550    0.5265

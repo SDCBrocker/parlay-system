@@ -1,0 +1,14 @@
+feature,importance
+h2h_avg_goals,595.0376913547516
+home_form_10,431.5570792928338
+away_form_10,423.0557424835861
+away_goals_for_avg_5,355.537363268435
+home_goals_against_avg_5,344.03818305954337
+home_goals_for_avg_5,342.04460674896836
+away_goals_against_avg_5,312.53562630712986
+away_form_5,294.037601146847
+home_form_5,279.5415926538408
+h2h_home_wins,180.5343625470996
+home_win_rate,162.5376839824021
+away_win_rate,146.0424671396613
+is_home,0.0
