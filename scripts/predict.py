@@ -1,6 +1,6 @@
 """
 predict.py — Prediksi fixtures + filter 3 tier + bobot liga.
-Versi 4: bobot skor per liga (bukan filter buang liga).
+Versi 5: support ensemble model dict dan 2 model binary 1x2 home/away.
 """
 import sys
 import json
@@ -20,24 +20,19 @@ from train import FEATURES
 from validate_fixtures import validate as validate_fixtures
 
 
-# === Bobot liga berdasarkan ROI backtest per liga ===
-# Formula: bobot = 1 + (ROI × 3), dibatasi 0.5 - 1.5
-# ROI +10% -> 1.30, ROI -10% -> 0.70, ROI -30% -> 0.50 (clamp)
 LEAGUE_WEIGHTS = {
-    "Eredivisie":   1.30,   # ROI +9.62%
-    "Ligue1":       1.20,   # ROI +6.66%
-    "PrimeiraLiga": 0.95,   # ROI -2.55%
-    "Championship": 0.90,   # ROI -4.15%
-    "LaLiga":       0.70,   # ROI -20.80%
-    "SerieA":       0.65,   # ROI -22.57%
-    "EPL":          0.60,   # ROI -28.22%
-    "Bundesliga":   0.55,   # ROI -32.00%
-    # Liga default (tidak ada di backtest)
-    "LigaMX":       0.80,
-    "Brasileirao":  0.80,
+    "Eredivisie": 1.30,
+    "Ligue1": 1.20,
+    "PrimeiraLiga": 0.95,
+    "Championship": 0.90,
+    "LaLiga": 0.70,
+    "SerieA": 0.65,
+    "EPL": 0.60,
+    "Bundesliga": 0.55,
+    "LigaMX": 0.80,
+    "Brasileirao": 0.80,
 }
 
-# Threshold minimum skor setelah bobot
 MIN_WEIGHTED_SCORE = 0.30
 
 FIXTURE_COLUMNS = [
@@ -68,7 +63,6 @@ def load_fixtures() -> pd.DataFrame:
     df = pd.read_csv(p)
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
 
-    # Auto-generate match_id kalau kosong
     for i, row in df.iterrows():
         mid = str(row.get("match_id", "")).strip()
         if not mid or mid.lower() in ("nan", "none", ""):
@@ -158,37 +152,60 @@ def build_features(fixtures: pd.DataFrame, hist: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def predict_with_ensemble(model_dict, X, task="binary"):
+    if not isinstance(model_dict, dict) or "xgb" not in model_dict or "lgbm" not in model_dict:
+        raise TypeError(f"Model bukan ensemble dict: {type(model_dict)}")
+
+    xgb = model_dict["xgb"]
+    lgbm = model_dict["lgbm"]
+    weights = model_dict.get("weights", {"xgb": 0.5, "lgbm": 0.5})
+
+    xgb_prob = xgb.predict_proba(X)
+    lgbm_prob = lgbm.predict_proba(X)
+    prob = weights["xgb"] * xgb_prob + weights["lgbm"] * lgbm_prob
+
+    if task == "binary":
+        pred = (prob[:, 1] > 0.5).astype(int)
+        return prob, pred
+
+    pred = np.argmax(prob, axis=1)
+    return prob, pred
+
+
 def predict_all(models, df: pd.DataFrame) -> list[dict]:
     X = df[[c for c in FEATURES if c in df.columns]].astype(float)
     results = []
-    def _predict(model, X):
-        if isinstance(model, dict):
-            xgb = model["xgb"].predict_proba(X)
-            lgbm = model["lgbm"].predict_proba(X)
-            return (xgb + lgbm) / 2
-        return model.predict_proba(X)
 
-    prob_1x2 = _predict(models["model_1x2"], X)
-    prob_ou = _predict(models["model_ou"], X)
-    prob_btts = _predict(models["model_btts"], X)
+    home_model = models["model_1x2_home"]
+    away_model = models["model_1x2_away"]
+    ou_model = models["model_ou"]
+    btts_model = models["model_btts"]
+
+    prob_home, pred_home = predict_with_ensemble(home_model, X, task="binary")
+    prob_away, pred_away = predict_with_ensemble(away_model, X, task="binary")
+    prob_ou, pred_ou = predict_with_ensemble(ou_model, X, task="binary")
+    prob_btts, pred_btts = predict_with_ensemble(btts_model, X, task="binary")
 
     for i, row in df.iterrows():
         preds = []
-        # 1X2
-        p_h, p_d, p_a = prob_1x2[i]
+
+        p_h = prob_home[i][1]
+        p_a = prob_away[i][1]
+        p_draw = 1 - p_h - p_a
+        p_draw = max(0, min(1, p_draw))
         choices = [
             ("Home Win", p_h, row.get("odds_home")),
-            ("Draw", p_d, row.get("odds_draw")),
+            ("Draw", p_draw, row.get("odds_draw")),
             ("Away Win", p_a, row.get("odds_away")),
         ]
-        best = max(choices, key=lambda x: x[1])
+        best_label, best_prob, best_odds = max(choices, key=lambda x: x[1])
         preds.append({
-            "market": "1X2", "prediction": best[0],
-            "confidence": round(float(best[1]), 4),
-            "odds": float(best[2]) if pd.notna(best[2]) else None,
+            "market": "1X2",
+            "prediction": best_label,
+            "confidence": round(float(best_prob), 4),
+            "odds": float(best_odds) if pd.notna(best_odds) else None,
         })
 
-        # O/U
         p_over_2_5 = prob_ou[i][1]
         for line in OU_LINES:
             if line == 2.5:
@@ -200,37 +217,43 @@ def predict_all(models, df: pd.DataFrame) -> list[dict]:
             else:
                 p_over = p_over_2_5
             p_under = 1 - p_over
+            market_name = f"O/U {line}"
             if p_over >= p_under:
                 preds.append({
-                    "market": f"O/U {line}", "prediction": "Over",
+                    "market": market_name,
+                    "prediction": "Over",
                     "confidence": round(float(p_over), 4),
                     "odds": row.get(f"odds_over_{line}") if f"odds_over_{line}" in row else row.get("odds_over_2_5"),
                 })
             else:
                 preds.append({
-                    "market": f"O/U {line}", "prediction": "Under",
+                    "market": market_name,
+                    "prediction": "Under",
                     "confidence": round(float(p_under), 4),
                     "odds": row.get(f"odds_under_{line}") if f"odds_under_{line}" in row else row.get("odds_under_2_5"),
                 })
 
-        # BTTS
         p_btts = prob_btts[i][1]
         if p_btts >= 0.5:
             preds.append({
-                "market": "BTTS", "prediction": "Yes",
+                "market": "BTTS",
+                "prediction": "Yes",
                 "confidence": round(float(p_btts), 4),
                 "odds": row.get("odds_btts_yes"),
             })
         else:
             preds.append({
-                "market": "BTTS", "prediction": "No",
+                "market": "BTTS",
+                "prediction": "No",
                 "confidence": round(float(1 - p_btts), 4),
                 "odds": row.get("odds_btts_no"),
             })
 
         results.append({
-            "match_id": row["match_id"], "league": row["league"],
-            "home": row["home_team"], "away": row["away_team"],
+            "match_id": row["match_id"],
+            "league": row["league"],
+            "home": row["home_team"],
+            "away": row["away_team"],
             "predictions": preds,
         })
     return results
@@ -250,24 +273,19 @@ def filter_and_classify(results: list[dict]) -> tuple[list, list, list]:
                 continue
             value = conf * odds - 1
 
-            # Skor dasar (belum bobot)
             skor_dasar = hitung_skor(conf, value)
-            # Skor setelah bobot liga
             skor_final = skor_dasar * bobot
 
-            # Threshold: skor final minimal
             if skor_final < MIN_WEIGHTED_SCORE:
                 continue
 
-            # Klasifikasi tier pakai skor final
             tier = klasifikasi_tier(conf, value)
-            # Kalau skor_final tinggi, naikkan tier
             if skor_final >= TIER_S["skor"] * 1.1 and conf >= TIER_S["conf"]:
                 tier = "S"
             elif skor_final >= TIER_A["skor"] * 1.1 and conf >= TIER_A["conf"]:
                 tier = "A"
             elif tier == "X":
-                tier = "B"  # Skor final > threshold → masuk B
+                tier = "B"
 
             item = {
                 "match_id": match["match_id"], "league": liga,
@@ -360,8 +378,7 @@ def save_tracking(tier_s, tier_a, tier_b):
 def main():
     print("=== PREDIKSI HARI INI (dengan bobot liga) ===")
     models = load_models()
-    print("[OK] 3 model loaded")
-    # Validasi fixtures dulu
+    print("[OK] 4 model loaded")
     is_valid, errors = validate_fixtures()
     if not is_valid:
         print("[ERROR] Fixtures tidak valid:")
