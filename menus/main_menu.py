@@ -145,10 +145,10 @@ def main():
             run_script("scripts/predict.py")
         elif p == "10":
             run_script("menus/check_result.py")
-        elif p == "11":
-            run_script("scripts/update_tracking.py")
         elif p == "11b":
             run_script("scripts/cleanup_tracking.py")
+        elif p == "11":
+            run_script("scripts/update_tracking.py")
         elif p == "12":
             run_script("menus/send_telegram.py")
         elif p == "13":
