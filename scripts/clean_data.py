@@ -38,7 +38,6 @@ def drop_leakage_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def handle_missing(df: pd.DataFrame) -> pd.DataFrame:
     """Drop kolom >50% kosong, isi sisanya."""
-    # Drop kolom >50% kosong
     threshold = len(df) * 0.5
     before = len(df.columns)
     df = df.dropna(axis=1, thresh=threshold)
@@ -50,8 +49,8 @@ def handle_missing(df: pd.DataFrame) -> pd.DataFrame:
     num_cols = df.select_dtypes(include=["number"]).columns
     df[num_cols] = df[num_cols].fillna(0)
 
-    # Isi kategorikal dengan "Unknown"
-    cat_cols = df.select_dtypes(include=["object"]).columns
+    # Isi kategorikal dengan "Unknown" (lebih aman untuk pandas 2/3)
+    cat_cols = df.select_dtypes(include=["object", "string", "category"]).columns
     df[cat_cols] = df[cat_cols].fillna("Unknown")
 
     return df
