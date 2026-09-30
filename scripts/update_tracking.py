@@ -7,7 +7,6 @@ Cara pakai:
   python scripts/update_tracking.py
 """
 import sys
-from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -20,7 +19,7 @@ def load_pending() -> pd.DataFrame:
     p = path("data/processed/tracking_pending.csv")
     if not p.exists():
         return pd.DataFrame()
-    return pd.read_csv(p)
+    return pd.read_csv(p, low_memory=False)
 
 
 def load_history_db() -> pd.DataFrame:
@@ -30,10 +29,19 @@ def load_history_db() -> pd.DataFrame:
     return pd.read_csv(p, low_memory=False)
 
 
+def normalize_match_id(value):
+    if value is None or pd.isna(value):
+        return ""
+    return str(value).strip()
+
+
 def cek_hasil(pred: dict, db: pd.DataFrame) -> dict:
     """Cocokkan 1 prediksi dengan hasil aktual."""
-    mid = pred.get("match_id")
-    row = db[db["match_id"] == mid]
+    mid = normalize_match_id(pred.get("match_id"))
+    if not mid:
+        return {"status": "pending", "hasil": None, "profit": 0}
+
+    row = db[db["match_id"].astype(str).str.strip() == mid]
     if row.empty:
         return {"status": "pending", "hasil": None, "profit": 0}
 
@@ -49,7 +57,6 @@ def cek_hasil(pred: dict, db: pd.DataFrame) -> dict:
     odds = float(pred.get("odds", 1.0))
     stake = float(pred.get("stake_saya") or pred.get("stake_rekomendasi") or 10000)
 
-    # Tentukan hasil aktual
     if market == "1X2":
         if hg > ag:
             actual = "Home Win"
@@ -95,7 +102,6 @@ def main():
     print(f"Pending: {len(pending)} baris")
     print(f"Database: {len(db)} baris")
 
-    # Update setiap baris
     updated = []
     n_win = 0
     n_lose = 0
@@ -122,7 +128,6 @@ def main():
 
     df_updated = pd.DataFrame(updated)
 
-    # Pisahkan yang sudah selesai vs pending
     selesai = df_updated[df_updated["hasil"].notna() & (df_updated["hasil"] != "")]
     pending_baru = df_updated[df_updated["hasil"].isna() | (df_updated["hasil"] == "")]
 
@@ -132,7 +137,6 @@ def main():
     print(f"  Pending: {n_pending}")
     print(f"  Total profit: Rp {total_profit:+,}")
 
-    # Simpan history
     if not selesai.empty:
         hist_path = path("data/processed/tracking_history.csv")
         if hist_path.exists():
@@ -144,7 +148,6 @@ def main():
         hist_all.to_csv(hist_path, index=False)
         print(f"\n[OK] History: {hist_path} ({len(hist_all)} baris)")
 
-    # Simpan pending baru
     pending_path = path("data/processed/tracking_pending.csv")
     if not pending_baru.empty:
         pending_baru.to_csv(pending_path, index=False)
