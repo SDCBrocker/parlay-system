@@ -188,6 +188,7 @@ def save_model(model, name, metadata=None):
     if metadata:
         meta_out = path(f"models/{name}_meta.json")
         with open(meta_out, "w") as f:
+            import json
             json.dump(metadata, f, indent=2, default=str)
         print(f"  ✓ Metadata: {meta_out}")
 
