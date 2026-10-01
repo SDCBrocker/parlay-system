@@ -72,7 +72,6 @@ def print_header():
     print(f"{Fore.CYAN}║   XGBoost · 10 Liga · O/U Fleksibel · Tier        ║{Style.RESET_ALL}")
     print(f"{Fore.CYAN}╚═══════════════════════════════════════════════════╝{Style.RESET_ALL}")
 
-    # Status Apify di header
     badge = get_apify_status_badge()
     print(f"  {badge}")
     print()
