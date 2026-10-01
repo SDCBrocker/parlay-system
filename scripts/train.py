@@ -1,16 +1,19 @@
 """
-train.py — Latih model dengan binary 1X2 + class weight + ensemble bobot + versioning.
-Versi 4:
+train.py — Latih model dengan binary 1X2 + class weight + ensemble bobot + versioning + NORMALISASI FIX.
+Versi 5:
 - 1X2 dipecah jadi 2 model binary (Home Win, Away Win)
 - Class weight untuk handle imbalance
 - Ensemble bobot (XGB + LGBM)
 - Cross-validation untuk deteksi overfitting
 - Model metadata logging dengan version tag
 - Safety checks untuk data quality
+- FIX: Normalisasi dilakukan dari TRAINING SET SAJA
+- FIX: Normalisasi parameters disimpan & diaplikasikan ke test set
 """
 import sys
 import shutil
 import json
+import pickle
 from datetime import datetime
 from pathlib import Path
 
@@ -20,7 +23,8 @@ import joblib
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from sklearn.metrics import accuracy_score, log_loss, classification_report
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, TimeSeriesSplit
+from sklearn.preprocessing import StandardScaler
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from config import path, MODEL_VERSION, N_LEAGUES, TRAINING_DATE, CV_OVERFITTING_THRESHOLD
@@ -38,6 +42,7 @@ FEATURES = [
     "home_clean_sheet_rate_5", "away_clean_sheet_rate_5",
     "home_failed_score_rate_5", "away_failed_score_rate_5",
     "home_rest_days", "away_rest_days",
+    "home_congestion_7d", "away_congestion_7d",
 ]
 
 XGB_PARAMS = {
@@ -70,7 +75,7 @@ ENSEMBLE_WEIGHTS = {
 
 
 def load_data():
-    p = path("data/processed/matches_normalized.csv")
+    p = path("data/processed/matches_features.csv")
     if not p.exists():
         raise FileNotFoundError(f"Input tidak ada: {p}")
     df = pd.read_csv(p, low_memory=False)
@@ -78,12 +83,29 @@ def load_data():
     return df
 
 
-def split_data(df, test_size=0.2):
-    """Split chronologically (time-series aware)."""
+def split_data_timeseries(df, test_size=0.2):
+    """Split chronologically menggunakan TimeSeriesSplit concept."""
     df = df.sort_values("date").reset_index(drop=True)
     n = len(df)
     split_idx = int(n * (1 - test_size))
     return df.iloc[:split_idx].copy(), df.iloc[split_idx:].copy()
+
+
+def normalize_features(X_train, X_test, feature_cols):
+    """
+    FIX #1.2: Normalisasi dari TRAINING SET saja.
+    - Fit scaler pada X_train
+    - Transform X_train dan X_test dengan scaler yang sama
+    - Return scaled data dan scaler (untuk predict.py nanti)
+    """
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+    
+    X_train_scaled = pd.DataFrame(X_train_scaled, columns=feature_cols, index=X_train.index)
+    X_test_scaled = pd.DataFrame(X_test_scaled, columns=feature_cols, index=X_test.index)
+    
+    return X_train_scaled, X_test_scaled, scaler
 
 
 def prepare_xy(df, label_col):
@@ -112,9 +134,10 @@ def prepare_xy(df, label_col):
 
 
 def cross_validate_model(model_class, X, y, cv_folds=5):
-    """Hitung CV score untuk deteksi overfitting."""
+    """Hitung CV score dengan TimeSeriesSplit untuk time series data."""
     try:
-        scores = cross_val_score(model_class, X, y, cv=cv_folds, scoring="accuracy")
+        tscv = TimeSeriesSplit(n_splits=cv_folds)
+        scores = cross_val_score(model_class, X, y, cv=tscv, scoring="accuracy")
         return scores.mean(), scores.std()
     except Exception as e:
         print(f"    CV error: {e}")
@@ -206,9 +229,17 @@ def save_model(model, name, metadata=None):
         print(f"  ✓ Metadata: {meta_out}")
 
 
+def save_scaler(scaler, name):
+    """Save normalization scaler untuk prediction time."""
+    out = path(f"models/{name}_scaler.pkl")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(scaler, out)
+    print(f"  ✓ Scaler saved: {out}")
+
+
 def main():
     print("=" * 70)
-    print("TRAINING VERSI 4 (Versioning + Safety + CV Checks)")
+    print("TRAINING VERSI 5 (Normalisasi FIX + TimeSeriesSplit + Consistency Features)")
     print("=" * 70)
     print(f"Model Version: {MODEL_VERSION}")
     print(f"N Leagues: {N_LEAGUES}")
@@ -218,7 +249,7 @@ def main():
     print(f"Data range: {df['date'].min()} → {df['date'].max()}")
     print(f"Unique leagues: {df['league'].nunique()}")
 
-    train_df, test_df = split_data(df, test_size=0.2)
+    train_df, test_df = split_data_timeseries(df, test_size=0.2)
     print(f"Split: train={len(train_df)}, test={len(test_df)}\n")
 
     # Save test set for validation
@@ -230,6 +261,8 @@ def main():
         "training_date": TRAINING_DATE,
         "n_leagues": N_LEAGUES,
         "trained_at": datetime.now().isoformat(),
+        "normalization": "StandardScaler fitted on training set only",
+        "validation_strategy": "TimeSeriesSplit (chronological split)",
         "models": {}
     }
 
@@ -245,6 +278,12 @@ def main():
 
     X_train, y_train, cols = prepare_xy(train_df, "is_home_win")
     X_test, y_test, _ = prepare_xy(test_df, "is_home_win")
+    
+    # FIX #1.2: Normalize dari training set saja
+    print("  [FIX #1.2] Normalizing features from training set...")
+    X_train, X_test, scaler_home = normalize_features(X_train, X_test, cols)
+    print("  ✓ Normalization applied (scaler fitted on training set)")
+    
     model_home, acc_h, ll_h, cv_h, overfit_h = train_ensemble(X_train, y_train, X_test, y_test, "1x2_home")
     
     meta_h = {
@@ -260,6 +299,7 @@ def main():
         "ensemble_weights": model_home["weights"],
     }
     save_model(model_home, "model_1x2_home", meta_h)
+    save_scaler(scaler_home, "model_1x2_home")
     all_metadata["models"]["1x2_home"] = meta_h
     results["1x2_home"] = {"acc": acc_h, "logloss": ll_h}
 
@@ -270,6 +310,11 @@ def main():
     
     X_train, y_train, cols = prepare_xy(train_df, "is_away_win")
     X_test, y_test, _ = prepare_xy(test_df, "is_away_win")
+    
+    print("  [FIX #1.2] Normalizing features from training set...")
+    X_train, X_test, scaler_away = normalize_features(X_train, X_test, cols)
+    print("  ✓ Normalization applied (scaler fitted on training set)")
+    
     model_away, acc_a, ll_a, cv_a, overfit_a = train_ensemble(X_train, y_train, X_test, y_test, "1x2_away")
     
     meta_a = {
@@ -285,6 +330,7 @@ def main():
         "ensemble_weights": model_away["weights"],
     }
     save_model(model_away, "model_1x2_away", meta_a)
+    save_scaler(scaler_away, "model_1x2_away")
     all_metadata["models"]["1x2_away"] = meta_a
     results["1x2_away"] = {"acc": acc_a, "logloss": ll_a}
 
@@ -295,6 +341,11 @@ def main():
     
     X_train, y_train, cols = prepare_xy(train_df, "over_2_5")
     X_test, y_test, _ = prepare_xy(test_df, "over_2_5")
+    
+    print("  [FIX #1.2] Normalizing features from training set...")
+    X_train, X_test, scaler_ou = normalize_features(X_train, X_test, cols)
+    print("  ✓ Normalization applied (scaler fitted on training set)")
+    
     model_ou, acc_ou, ll_ou, cv_ou, overfit_ou = train_ensemble(X_train, y_train, X_test, y_test, "ou")
     
     meta_ou = {
@@ -310,6 +361,7 @@ def main():
         "ensemble_weights": model_ou["weights"],
     }
     save_model(model_ou, "model_ou", meta_ou)
+    save_scaler(scaler_ou, "model_ou")
     all_metadata["models"]["ou"] = meta_ou
     results["ou"] = {"acc": acc_ou, "logloss": ll_ou}
 
@@ -320,6 +372,11 @@ def main():
     
     X_train, y_train, cols = prepare_xy(train_df, "btts")
     X_test, y_test, _ = prepare_xy(test_df, "btts")
+    
+    print("  [FIX #1.2] Normalizing features from training set...")
+    X_train, X_test, scaler_btts = normalize_features(X_train, X_test, cols)
+    print("  ✓ Normalization applied (scaler fitted on training set)")
+    
     model_btts, acc_btts, ll_btts, cv_btts, overfit_btts = train_ensemble(X_train, y_train, X_test, y_test, "btts")
     
     meta_btts = {
@@ -335,6 +392,7 @@ def main():
         "ensemble_weights": model_btts["weights"],
     }
     save_model(model_btts, "model_btts", meta_btts)
+    save_scaler(scaler_btts, "model_btts")
     all_metadata["models"]["btts"] = meta_btts
     results["btts"] = {"acc": acc_btts, "logloss": ll_btts}
 
@@ -352,6 +410,7 @@ def main():
         json.dump(all_metadata, f, indent=2, default=str)
     print(f"\n✓ Master training log: {log_p}")
     print(f"✓ Model version: {MODEL_VERSION}")
+    print(f"✓ Normalization scalers saved for prediction stage")
     print("\n✅ Training complete!")
 
 

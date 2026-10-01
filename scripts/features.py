@@ -2,6 +2,7 @@
 features.py — Feature engineering.
 Input : data/processed/matches_clean.csv
 Output: data/processed/matches_features.csv
+Versi 5: Tambah consistency & rest-day features ke main(), perbaiki congestion calculation.
 """
 import sys
 from pathlib import Path
@@ -145,51 +146,6 @@ def create_contextual_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def check_rolling_leakage(df: pd.DataFrame):
-    """Warning kalau baris pertama rolling tidak NaN."""
-    for col in ["home_form_5", "away_form_5"]:
-        if col in df.columns:
-            first_val = df[col].iloc[0]
-            if pd.notna(first_val) and first_val != 0:
-                print(f"  ⚠ Warning: {col} baris pertama = {first_val} (indikasi leakage?)")
-
-
-def main():
-    print("=== FEATURE ENGINEERING ===")
-
-    in_file = path("data/processed/matches_clean.csv")
-    out_file = path("data/processed/matches_features.csv")
-
-    if not in_file.exists():
-        print(f"❌ Input tidak ada: {in_file}")
-        print("   Jalankan dulu: python scripts/clean_data.py")
-        return
-
-    df = pd.read_csv(in_file, low_memory=False)
-    print(f"Input: {len(df)} baris")
-
-    df = create_differential_features(df)
-    df = create_rolling_features(df)
-    df = create_home_away_features(df)
-    df = create_h2h_features(df)
-    df = create_contextual_features(df)
-
-    check_rolling_leakage(df)
-
-    out_file.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(out_file, index=False)
-
-    print(f"\n✓ Output: {out_file}")
-    print(f"✓ {len(df)} baris, {len(df.columns)} kolom")
-
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-
 def create_consistency_features(df: pd.DataFrame) -> pd.DataFrame:
     """Fitur konsistensi tim (std dev, clean sheet, failed to score)."""
     home = df[["date", "home_team", "home_goals", "away_goals"]].copy()
@@ -238,19 +194,115 @@ def create_consistency_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def create_rest_days_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Fitur rest days & congestion."""
+    """Fitur rest days & congestion (fixed calculation)."""
     df = df.sort_values("date").reset_index(drop=True)
 
-    # Rest days home
+    # Rest days home & away
     df["home_rest_days"] = df.groupby("home_team")["date"].diff().dt.days
     df["away_rest_days"] = df.groupby("away_team")["date"].diff().dt.days
 
-    # Congestion 7 hari terakhir
-    def count_matches_7d(team_dates, current_date):
-        return ((team_dates >= current_date - pd.Timedelta(days=7)) & (team_dates < current_date)).sum()
+    # Congestion 7 hari terakhir (fixed: count actual matches in 7d window)
+    def count_matches_in_7d(group_df, current_idx):
+        """Count berapa banyak matches tim dalam 7 hari sebelum current_date."""
+        current_date = group_df.iloc[current_idx]["date"]
+        window_start = current_date - pd.Timedelta(days=7)
+        # Count matches >= 7 days ago but < current date
+        count = ((group_df["date"] > window_start) & (group_df["date"] < current_date)).sum()
+        return count
 
-    # Sederhanakan: pakai rolling count
-    df["home_congestion_7d"] = df.groupby("home_team").cumcount().diff().fillna(0).clip(0, 3)
-    df["away_congestion_7d"] = df.groupby("away_team").cumcount().diff().fillna(0).clip(0, 3)
+    # Home congestion
+    home_congestion = []
+    for team in df["home_team"].unique():
+        team_home_df = df[df["home_team"] == team].reset_index(drop=True)
+        team_congestion = []
+        for idx in range(len(team_home_df)):
+            count = count_matches_in_7d(team_home_df, idx)
+            team_congestion.append(count)
+        home_congestion.extend(team_congestion)
+    
+    # Away congestion
+    away_congestion = []
+    for team in df["away_team"].unique():
+        team_away_df = df[df["away_team"] == team].reset_index(drop=True)
+        team_congestion = []
+        for idx in range(len(team_away_df)):
+            count = count_matches_in_7d(team_away_df, idx)
+            team_congestion.append(count)
+        away_congestion.extend(team_congestion)
+    
+    # Assign kembali ke dataframe (hati-hati dengan urutan)
+    df_temp = df.copy()
+    df_temp["home_congestion_7d"] = 0
+    df_temp["away_congestion_7d"] = 0
+    
+    for team in df["home_team"].unique():
+        mask = df["home_team"] == team
+        team_df = df[mask].reset_index(drop=True)
+        congestion_vals = []
+        for idx in range(len(team_df)):
+            count = count_matches_in_7d(team_df, idx)
+            congestion_vals.append(count)
+        df.loc[mask, "home_congestion_7d"] = congestion_vals
+    
+    for team in df["away_team"].unique():
+        mask = df["away_team"] == team
+        team_df = df[mask].reset_index(drop=True)
+        congestion_vals = []
+        for idx in range(len(team_df)):
+            count = count_matches_in_7d(team_df, idx)
+            congestion_vals.append(count)
+        df.loc[mask, "away_congestion_7d"] = congestion_vals
 
     return df
+
+
+def check_rolling_leakage(df: pd.DataFrame):
+    """Warning kalau baris pertama rolling tidak NaN."""
+    for col in ["home_form_5", "away_form_5"]:
+        if col in df.columns:
+            first_val = df[col].iloc[0]
+            if pd.notna(first_val) and first_val != 0:
+                print(f"  ⚠ Warning: {col} baris pertama = {first_val} (indikasi leakage?)")
+
+
+def main():
+    print("=== FEATURE ENGINEERING ===")
+
+    in_file = path("data/processed/matches_clean.csv")
+    out_file = path("data/processed/matches_features.csv")
+
+    if not in_file.exists():
+        print(f"❌ Input tidak ada: {in_file}")
+        print("   Jalankan dulu: python scripts/clean_data.py")
+        return
+
+    df = pd.read_csv(in_file, low_memory=False)
+    print(f"Input: {len(df)} baris")
+
+    df = create_differential_features(df)
+    df = create_rolling_features(df)
+    df = create_home_away_features(df)
+    df = create_h2h_features(df)
+    df = create_contextual_features(df)
+    
+    # FIX #1.1: Panggil consistency & rest-day features
+    print("\n[Stage 1 Fix #1.1] Adding consistency features...")
+    df = create_consistency_features(df)
+    print("  ✓ Consistency features added")
+    
+    print("[Stage 1 Fix #1.1] Adding rest-day & congestion features...")
+    df = create_rest_days_features(df)
+    print("  ✓ Rest-day & congestion features added")
+
+    check_rolling_leakage(df)
+
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(out_file, index=False)
+
+    print(f"\n✓ Output: {out_file}")
+    print(f"✓ {len(df)} baris, {len(df.columns)} kolom")
+    print(f"✓ Features: {sorted([c for c in df.columns if 'form_' in c or 'rest_' in c or 'congestion' in c])}")
+
+
+if __name__ == "__main__":
+    main()
