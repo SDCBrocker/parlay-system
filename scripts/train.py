@@ -1,11 +1,12 @@
 """
-train.py — Latih model dengan binary 1X2 + class weight + ensemble bobot.
-Versi 3:
+train.py — Latih model dengan binary 1X2 + class weight + ensemble bobot + versioning.
+Versi 4:
 - 1X2 dipecah jadi 2 model binary (Home Win, Away Win)
 - Class weight untuk handle imbalance
 - Ensemble bobot (XGB + LGBM)
 - Cross-validation untuk deteksi overfitting
-- Model metadata logging
+- Model metadata logging dengan version tag
+- Safety checks untuk data quality
 """
 import sys
 import shutil
@@ -22,7 +23,7 @@ from sklearn.metrics import accuracy_score, log_loss, classification_report
 from sklearn.model_selection import cross_val_score
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-from config import path
+from config import path, MODEL_VERSION, N_LEAGUES, TRAINING_DATE, CV_OVERFITTING_THRESHOLD
 
 
 FEATURES = [
@@ -72,10 +73,13 @@ def load_data():
     p = path("data/processed/matches_normalized.csv")
     if not p.exists():
         raise FileNotFoundError(f"Input tidak ada: {p}")
-    return pd.read_csv(p, low_memory=False)
+    df = pd.read_csv(p, low_memory=False)
+    print(f"  Loaded: {len(df)} matches")
+    return df
 
 
 def split_data(df, test_size=0.2):
+    """Split chronologically (time-series aware)."""
     df = df.sort_values("date").reset_index(drop=True)
     n = len(df)
     split_idx = int(n * (1 - test_size))
@@ -83,6 +87,7 @@ def split_data(df, test_size=0.2):
 
 
 def prepare_xy(df, label_col):
+    """Prepare X, y with robust error handling."""
     cols = [c for c in FEATURES if c in df.columns]
     
     missing = [c for c in FEATURES if c not in df.columns]
@@ -98,6 +103,11 @@ def prepare_xy(df, label_col):
     
     X = sub[cols].astype(float)
     y = sub[label_col].astype(int)
+    
+    # Check class balance
+    vc = y.value_counts()
+    print(f"    Class distribution: {dict(vc)}")
+    
     return X, y, cols
 
 
@@ -107,6 +117,7 @@ def cross_validate_model(model_class, X, y, cv_folds=5):
         scores = cross_val_score(model_class, X, y, cv=cv_folds, scoring="accuracy")
         return scores.mean(), scores.std()
     except Exception as e:
+        print(f"    CV error: {e}")
         return float("nan"), float("nan")
 
 
@@ -114,7 +125,6 @@ def train_ensemble(X_train, y_train, X_test, y_test, name, task="binary"):
     """Latih XGB + LGBM, gabung dengan bobot."""
     print(f"\n  ── {name} ──")
     print(f"  Train: {len(X_train)} | Test: {len(X_test)}")
-    print(f"  Label distribusi: {y_train.value_counts().to_dict()}")
 
     weights = ENSEMBLE_WEIGHTS.get(name, {"xgb": 0.5, "lgbm": 0.5})
 
@@ -138,7 +148,8 @@ def train_ensemble(X_train, y_train, X_test, y_test, name, task="binary"):
         acc_lgbm = accuracy_score(y_test, lgbm.predict(X_test))
         acc_ens = accuracy_score(y_test, ens_pred)
         ll_ens = log_loss(y_test, ens_prob)
-    except Exception:
+    except Exception as e:
+        print(f"    Eval error: {e}")
         acc_xgb = acc_lgbm = acc_ens = ll_ens = float("nan")
 
     print(f"  XGBoost : acc={acc_xgb:.4f}")
@@ -149,37 +160,45 @@ def train_ensemble(X_train, y_train, X_test, y_test, name, task="binary"):
     cv_mean, cv_std = cross_validate_model(xgb, X_train, y_train, cv_folds=5)
     print(f"  CV Score: {cv_mean:.4f} ± {cv_std:.4f}")
     
+    # Overfitting detection
+    overfitting_warning = False
     if not np.isnan(cv_mean):
-        if acc_ens > cv_mean + 0.15:
-            print(f"  ⚠️  POTENTIAL OVERFITTING: test_acc ({acc_ens:.4f}) >> cv_mean ({cv_mean:.4f})")
+        gap = acc_ens - cv_mean
+        if gap > CV_OVERFITTING_THRESHOLD:
+            print(f"  ⚠️  POTENTIAL OVERFITTING: gap={gap:.4f} (> threshold {CV_OVERFITTING_THRESHOLD})")
+            overfitting_warning = True
         elif acc_ens > 0.78:
-            print(f"  ⚠️  HIGH ACCURACY ({acc_ens:.4f}) — verify for data leakage")
+            print(f"  ⚠️  HIGH ACCURACY ({acc_ens:.4f}) — verify data leakage")
 
     return {
         "xgb": xgb, 
         "lgbm": lgbm, 
         "weights": weights,
         "features": list(X_train.columns),
-    }, acc_ens, ll_ens, cv_mean
+    }, acc_ens, ll_ens, cv_mean, overfitting_warning
 
 
 def backup_old_model(name):
+    """Backup model lama sebelum override."""
     old = path(f"models/{name}.pkl")
     if old.exists():
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_dir = path("models/backup")
         backup_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(old, backup_dir / f"{name}_{ts}.pkl")
+        backup_path = backup_dir / f"{name}_{ts}.pkl"
+        shutil.copy2(old, backup_path)
+        print(f"  Backed up: {backup_path}")
 
 
 def save_model(model, name, metadata=None):
+    """Save model + metadata dengan versioning."""
     backup_old_model(name)
+    
     out = path(f"models/{name}.pkl")
     out.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, out)
-    print(f"  ✓ Disimpan: {out}")
+    print(f"  ✓ Model saved: {out}")
     
-    # Simpan metadata
     if metadata:
         meta_out = path(f"models/{name}_meta.json")
         with open(meta_out, "w") as f:
@@ -188,21 +207,37 @@ def save_model(model, name, metadata=None):
 
 
 def main():
-    print("=== TRAINING VERSI 3 (Binary 1X2 + CV Check + Metadata) ===")
+    print("=" * 70)
+    print("TRAINING VERSI 4 (Versioning + Safety + CV Checks)")
+    print("=" * 70)
+    print(f"Model Version: {MODEL_VERSION}")
+    print(f"N Leagues: {N_LEAGUES}")
+    print()
 
     df = load_data()
-    print(f"Data: {len(df)} baris")
-    print(f"Rentang: {df['date'].min()} → {df['date'].max()}")
+    print(f"Data range: {df['date'].min()} → {df['date'].max()}")
+    print(f"Unique leagues: {df['league'].nunique()}")
 
     train_df, test_df = split_data(df, test_size=0.2)
-    print(f"Split: train={len(train_df)}, test={len(test_df)}")
+    print(f"Split: train={len(train_df)}, test={len(test_df)}\n")
 
+    # Save test set for validation
     test_df.to_csv(path("data/processed/matches_test.csv"), index=False)
 
     results = {}
-    all_metadata = {}
+    all_metadata = {
+        "model_version": MODEL_VERSION,
+        "training_date": TRAINING_DATE,
+        "n_leagues": N_LEAGUES,
+        "trained_at": datetime.now().isoformat(),
+        "models": {}
+    }
 
     # === 1X2 BINARY HOME ===
+    print("=" * 70)
+    print("Training 1X2 HOME")
+    print("=" * 70)
+    
     for d in [train_df, test_df]:
         d["result_enc"] = d["result"].map({"H": 0, "D": 1, "A": 2})
         d["is_home_win"] = (d["result"] == "H").astype(int)
@@ -210,91 +245,114 @@ def main():
 
     X_train, y_train, cols = prepare_xy(train_df, "is_home_win")
     X_test, y_test, _ = prepare_xy(test_df, "is_home_win")
-    model_home, acc_h, ll_h, cv_h = train_ensemble(X_train, y_train, X_test, y_test, "1x2_home")
+    model_home, acc_h, ll_h, cv_h, overfit_h = train_ensemble(X_train, y_train, X_test, y_test, "1x2_home")
     
     meta_h = {
         "name": "model_1x2_home",
+        "model_version": MODEL_VERSION,
         "trained_at": datetime.now().isoformat(),
         "test_accuracy": float(acc_h),
         "test_logloss": float(ll_h),
         "cv_mean_accuracy": float(cv_h),
+        "overfitting_warning": bool(overfit_h),
         "n_features": len(cols),
         "features": cols,
         "ensemble_weights": model_home["weights"],
     }
     save_model(model_home, "model_1x2_home", meta_h)
-    all_metadata["1x2_home"] = meta_h
+    all_metadata["models"]["1x2_home"] = meta_h
     results["1x2_home"] = {"acc": acc_h, "logloss": ll_h}
 
     # === 1X2 BINARY AWAY ===
+    print("\n" + "=" * 70)
+    print("Training 1X2 AWAY")
+    print("=" * 70)
+    
     X_train, y_train, cols = prepare_xy(train_df, "is_away_win")
     X_test, y_test, _ = prepare_xy(test_df, "is_away_win")
-    model_away, acc_a, ll_a, cv_a = train_ensemble(X_train, y_train, X_test, y_test, "1x2_away")
+    model_away, acc_a, ll_a, cv_a, overfit_a = train_ensemble(X_train, y_train, X_test, y_test, "1x2_away")
     
     meta_a = {
         "name": "model_1x2_away",
+        "model_version": MODEL_VERSION,
         "trained_at": datetime.now().isoformat(),
         "test_accuracy": float(acc_a),
         "test_logloss": float(ll_a),
         "cv_mean_accuracy": float(cv_a),
+        "overfitting_warning": bool(overfit_a),
         "n_features": len(cols),
         "features": cols,
         "ensemble_weights": model_away["weights"],
     }
     save_model(model_away, "model_1x2_away", meta_a)
-    all_metadata["1x2_away"] = meta_a
+    all_metadata["models"]["1x2_away"] = meta_a
     results["1x2_away"] = {"acc": acc_a, "logloss": ll_a}
 
-    # O/U
+    # === O/U ===
+    print("\n" + "=" * 70)
+    print("Training O/U (Over/Under 2.5)")
+    print("=" * 70)
+    
     X_train, y_train, cols = prepare_xy(train_df, "over_2_5")
     X_test, y_test, _ = prepare_xy(test_df, "over_2_5")
-    model_ou, acc_ou, ll_ou, cv_ou = train_ensemble(X_train, y_train, X_test, y_test, "ou")
+    model_ou, acc_ou, ll_ou, cv_ou, overfit_ou = train_ensemble(X_train, y_train, X_test, y_test, "ou")
     
     meta_ou = {
         "name": "model_ou",
+        "model_version": MODEL_VERSION,
         "trained_at": datetime.now().isoformat(),
         "test_accuracy": float(acc_ou),
         "test_logloss": float(ll_ou),
         "cv_mean_accuracy": float(cv_ou),
+        "overfitting_warning": bool(overfit_ou),
         "n_features": len(cols),
         "features": cols,
         "ensemble_weights": model_ou["weights"],
     }
     save_model(model_ou, "model_ou", meta_ou)
-    all_metadata["ou"] = meta_ou
+    all_metadata["models"]["ou"] = meta_ou
     results["ou"] = {"acc": acc_ou, "logloss": ll_ou}
 
-    # BTTS
+    # === BTTS ===
+    print("\n" + "=" * 70)
+    print("Training BTTS (Both Teams To Score)")
+    print("=" * 70)
+    
     X_train, y_train, cols = prepare_xy(train_df, "btts")
     X_test, y_test, _ = prepare_xy(test_df, "btts")
-    model_btts, acc_btts, ll_btts, cv_btts = train_ensemble(X_train, y_train, X_test, y_test, "btts")
+    model_btts, acc_btts, ll_btts, cv_btts, overfit_btts = train_ensemble(X_train, y_train, X_test, y_test, "btts")
     
     meta_btts = {
         "name": "model_btts",
+        "model_version": MODEL_VERSION,
         "trained_at": datetime.now().isoformat(),
         "test_accuracy": float(acc_btts),
         "test_logloss": float(ll_btts),
         "cv_mean_accuracy": float(cv_btts),
+        "overfitting_warning": bool(overfit_btts),
         "n_features": len(cols),
         "features": cols,
         "ensemble_weights": model_btts["weights"],
     }
     save_model(model_btts, "model_btts", meta_btts)
-    all_metadata["btts"] = meta_btts
+    all_metadata["models"]["btts"] = meta_btts
     results["btts"] = {"acc": acc_btts, "logloss": ll_btts}
 
-    print("\n" + "=" * 60)
-    print("RINGKASAN")
-    print("=" * 60)
+    # === SUMMARY ===
+    print("\n" + "=" * 70)
+    print("TRAINING SUMMARY")
+    print("=" * 70)
     for k, v in results.items():
         print(f"  {k:10s}: acc={v['acc']:.4f}  logloss={v['logloss']:.4f}")
 
-    # Simpan training log
+    # Save master training log
     log_p = path("logs/training_log.json")
     log_p.parent.mkdir(parents=True, exist_ok=True)
     with open(log_p, "w") as f:
         json.dump(all_metadata, f, indent=2, default=str)
-    print(f"\n✓ Training log: {log_p}")
+    print(f"\n✓ Master training log: {log_p}")
+    print(f"✓ Model version: {MODEL_VERSION}")
+    print("\n✅ Training complete!")
 
 
 if __name__ == "__main__":
