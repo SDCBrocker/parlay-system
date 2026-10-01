@@ -1,11 +1,14 @@
 """
 predict.py — Prediksi fixtures + filter 3 tier + bobot liga.
-Versi 5: support ensemble model dict dan 2 model binary 1x2 home/away.
+Versi 6: Support 1X2 multiclass model + separate O/U models per line.
+FIX #3: Draw prediction dari multiclass model (bukan residual)
+FIX #5: O/U dari separate models (bukan hardcoded offset)
 """
 import sys
 import json
 from datetime import datetime
 from pathlib import Path
+from collections import defaultdict
 
 import pandas as pd
 import numpy as np
@@ -39,6 +42,8 @@ FIXTURE_COLUMNS = [
     "match_id", "league", "date", "home_team", "away_team",
     "odds_home", "odds_draw", "odds_away",
     "odds_over_2_5", "odds_under_2_5",
+    "odds_over_1_5", "odds_under_1_5",
+    "odds_over_3_5", "odds_under_3_5",
     "odds_btts_yes", "odds_btts_no",
 ]
 
@@ -66,12 +71,33 @@ def format_match_date(value):
 
 
 def load_models():
+    """Load semua model: 1X2 multiclass + O/U terpisah + BTTS."""
     models = {}
-    for name in ["model_1x2_home", "model_1x2_away", "model_ou", "model_btts"]:
-        p = path(f"models/{name}.pkl")
-        if not p.exists():
-            raise FileNotFoundError(f"Model tidak ada: {p}")
-        models[name] = joblib.load(p)
+    
+    # FIX #3: Load 1X2 multiclass model
+    p_1x2 = path("models/model_1x2_multiclass.pkl")
+    if not p_1x2.exists():
+        raise FileNotFoundError(f"Model tidak ada: {p_1x2}")
+    models["model_1x2_multiclass"] = joblib.load(p_1x2)
+    print("  ✓ model_1x2_multiclass loaded")
+    
+    # FIX #5: Load O/U terpisah untuk setiap line
+    for line in [1.5, 2.5, 3.5]:
+        model_name = f"model_ou_{int(line*10)}"
+        p = path(f"models/{model_name}.pkl")
+        if p.exists():
+            models[model_name] = joblib.load(p)
+            print(f"  ✓ {model_name} loaded")
+        else:
+            print(f"  ⚠️  {model_name} tidak ada (O/U {line} tidak akan diprediksi)")
+    
+    # Load BTTS
+    p_btts = path("models/model_btts.pkl")
+    if not p_btts.exists():
+        raise FileNotFoundError(f"Model tidak ada: {p_btts}")
+    models["model_btts"] = joblib.load(p_btts)
+    print("  ✓ model_btts loaded")
+    
     return models
 
 
@@ -155,6 +181,10 @@ def build_features(fixtures: pd.DataFrame, hist: pd.DataFrame) -> pd.DataFrame:
             "odds_away": f.get("odds_away"),
             "odds_over_2_5": f.get("odds_over_2_5"),
             "odds_under_2_5": f.get("odds_under_2_5"),
+            "odds_over_1_5": f.get("odds_over_1_5"),
+            "odds_under_1_5": f.get("odds_under_1_5"),
+            "odds_over_3_5": f.get("odds_over_3_5"),
+            "odds_under_3_5": f.get("odds_under_3_5"),
             "odds_btts_yes": f.get("odds_btts_yes"),
             "odds_btts_no": f.get("odds_btts_no"),
             "home_form_5": home_stats.get("form_5", 1.5),
@@ -189,35 +219,42 @@ def predict_with_ensemble(model_dict, X, task="binary"):
     if task == "binary":
         pred = (prob[:, 1] > 0.5).astype(int)
         return prob, pred
-
-    pred = np.argmax(prob, axis=1)
-    return prob, pred
+    else:  # multiclass
+        pred = np.argmax(prob, axis=1)
+        return prob, pred
 
 
 def predict_all(models, df: pd.DataFrame) -> list[dict]:
     X = df[[c for c in FEATURES if c in df.columns]].astype(float)
     results = []
 
-    home_model = models["model_1x2_home"]
-    away_model = models["model_1x2_away"]
-    ou_model = models["model_ou"]
-    btts_model = models["model_btts"]
+    # FIX #3: Load 1X2 multiclass model
+    model_1x2 = models["model_1x2_multiclass"]
+    prob_1x2, pred_1x2 = predict_with_ensemble(model_1x2, X, task="multiclass")
+    # prob_1x2 shape: (n_samples, 3) untuk Home, Draw, Away
 
-    prob_home, pred_home = predict_with_ensemble(home_model, X, task="binary")
-    prob_away, pred_away = predict_with_ensemble(away_model, X, task="binary")
-    prob_ou, pred_ou = predict_with_ensemble(ou_model, X, task="binary")
+    # Load O/U models
+    ou_models = {}
+    for line in [1.5, 2.5, 3.5]:
+        model_name = f"model_ou_{int(line*10)}"
+        if model_name in models:
+            ou_models[line] = models[model_name]
+
+    # Load BTTS
+    btts_model = models["model_btts"]
     prob_btts, pred_btts = predict_with_ensemble(btts_model, X, task="binary")
 
     for i, row in df.iterrows():
         preds = []
 
-        p_h = prob_home[i][1]
-        p_a = prob_away[i][1]
-        p_draw = 1 - p_h - p_a
-        p_draw = max(0, min(1, p_draw))
+        # FIX #3: 1X2 prediction dari multiclass model
+        p_h = prob_1x2[i][0]  # Home probability
+        p_d = prob_1x2[i][1]  # Draw probability
+        p_a = prob_1x2[i][2]  # Away probability
+        
         choices = [
             ("Home Win", p_h, row.get("odds_home")),
-            ("Draw", p_draw, row.get("odds_draw")),
+            ("Draw", p_d, row.get("odds_draw")),
             ("Away Win", p_a, row.get("odds_away")),
         ]
         best_label, best_prob, best_odds = max(choices, key=lambda x: x[1])
@@ -228,33 +265,38 @@ def predict_all(models, df: pd.DataFrame) -> list[dict]:
             "odds": float(best_odds) if pd.notna(best_odds) else None,
         })
 
-        p_over_2_5 = prob_ou[i][1]
+        # FIX #5: O/U prediction dari separate models
         for line in OU_LINES:
-            if line == 2.5:
-                p_over = p_over_2_5
-            elif line == 1.5:
-                p_over = min(0.95, p_over_2_5 + 0.20)
-            elif line == 3.5:
-                p_over = max(0.05, p_over_2_5 - 0.20)
-            else:
-                p_over = p_over_2_5
+            model_name = f"model_ou_{int(line*10)}"
+            if model_name not in ou_models:
+                # Model tidak tersedia, skip line ini
+                continue
+            
+            ou_model = ou_models[line]
+            prob_ou, _ = predict_with_ensemble(ou_model, X.iloc[[i]], task="binary")
+            p_over = prob_ou[0][1]
             p_under = 1 - p_over
+            
             market_name = f"O/U {line}"
+            odds_over_col = f"odds_over_{line}"
+            odds_under_col = f"odds_under_{line}"
+            
             if p_over >= p_under:
                 preds.append({
                     "market": market_name,
                     "prediction": "Over",
                     "confidence": round(float(p_over), 4),
-                    "odds": row.get(f"odds_over_{line}") if f"odds_over_{line}" in row else row.get("odds_over_2_5"),
+                    "odds": row.get(odds_over_col),
                 })
             else:
                 preds.append({
                     "market": market_name,
                     "prediction": "Under",
                     "confidence": round(float(p_under), 4),
-                    "odds": row.get(f"odds_under_{line}") if f"odds_under_{line}" in row else row.get("odds_under_2_5"),
+                    "odds": row.get(odds_under_col),
                 })
 
+        # BTTS
         p_btts = prob_btts[i][1]
         if p_btts >= 0.5:
             preds.append({
@@ -404,9 +446,9 @@ def save_tracking(tier_s, tier_a, tier_b):
 
 
 def main():
-    print("=== PREDIKSI HARI INI (dengan bobot liga) ===")
+    print("=== PREDIKSI HARI INI (dengan 1X2 multiclass + O/U terpisah) ===")
     models = load_models()
-    print("[OK] 4 model loaded")
+    print("[OK] Models loaded")
     is_valid, errors = validate_fixtures()
     if not is_valid:
         print("[ERROR] Fixtures tidak valid:")

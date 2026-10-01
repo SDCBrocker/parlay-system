@@ -1,19 +1,17 @@
 """
-train.py — Latih model dengan binary 1X2 + class weight + ensemble bobot + versioning + NORMALISASI FIX.
-Versi 5:
-- 1X2 dipecah jadi 2 model binary (Home Win, Away Win)
+train.py — Latih model dengan 1X2 multiclass + O/U terpisah + class weight + ensemble bobot + versioning.
+Versi 6:
+- 1X2 dipecah jadi 1 model MULTICLASS (Home/Draw/Away) — FIX #3
+- O/U 1.5, 2.5, 3.5 dilatih TERPISAH sebagai 3 model — FIX #5
 - Class weight untuk handle imbalance
 - Ensemble bobot (XGB + LGBM)
 - Cross-validation untuk deteksi overfitting
 - Model metadata logging dengan version tag
-- Safety checks untuk data quality
-- FIX: Normalisasi dilakukan dari TRAINING SET SAJA
-- FIX: Normalisasi parameters disimpan & diaplikasikan ke test set
+- Normalisasi dari TRAINING SET SAJA (dari STAGE 1)
 """
 import sys
 import shutil
 import json
-import pickle
 from datetime import datetime
 from pathlib import Path
 
@@ -67,10 +65,11 @@ LGBM_PARAMS = {
 }
 
 ENSEMBLE_WEIGHTS = {
-    "1x2_home": {"xgb": 0.6, "lgbm": 0.4},
-    "1x2_away": {"xgb": 0.6, "lgbm": 0.4},
-    "ou":       {"xgb": 0.5, "lgbm": 0.5},
-    "btts":     {"xgb": 0.7, "lgbm": 0.3},
+    "1x2_multiclass": {"xgb": 0.6, "lgbm": 0.4},
+    "ou_1_5": {"xgb": 0.5, "lgbm": 0.5},
+    "ou_2_5": {"xgb": 0.5, "lgbm": 0.5},
+    "ou_3_5": {"xgb": 0.5, "lgbm": 0.5},
+    "btts": {"xgb": 0.7, "lgbm": 0.3},
 }
 
 
@@ -93,7 +92,7 @@ def split_data_timeseries(df, test_size=0.2):
 
 def normalize_features(X_train, X_test, feature_cols):
     """
-    FIX #1.2: Normalisasi dari TRAINING SET saja.
+    Normalisasi dari TRAINING SET saja.
     - Fit scaler pada X_train
     - Transform X_train dan X_test dengan scaler yang sama
     - Return scaled data dan scaler (untuk predict.py nanti)
@@ -148,22 +147,27 @@ def train_ensemble(X_train, y_train, X_test, y_test, name, task="binary"):
     """Latih XGB + LGBM, gabung dengan bobot."""
     print(f"\n  ── {name} ──")
     print(f"  Train: {len(X_train)} | Test: {len(X_test)}")
+    print(f"  Task: {task}")
 
     weights = ENSEMBLE_WEIGHTS.get(name, {"xgb": 0.5, "lgbm": 0.5})
 
-    # XGBoost dengan class weight
+    # XGBoost
     xgb = XGBClassifier(**XGB_PARAMS, scale_pos_weight=1)
     xgb.fit(X_train, y_train)
     xgb_prob = xgb.predict_proba(X_test)
 
-    # LightGBM dengan class weight
+    # LightGBM
     lgbm = LGBMClassifier(**LGBM_PARAMS, class_weight="balanced")
     lgbm.fit(X_train, y_train)
     lgbm_prob = lgbm.predict_proba(X_test)
 
     # Ensemble dengan bobot
     ens_prob = weights["xgb"] * xgb_prob + weights["lgbm"] * lgbm_prob
-    ens_pred = np.argmax(ens_prob, axis=1) if task == "multi" else (ens_prob[:, 1] > 0.5).astype(int)
+    
+    if task == "binary":
+        ens_pred = (ens_prob[:, 1] > 0.5).astype(int)
+    else:  # multiclass
+        ens_pred = np.argmax(ens_prob, axis=1)
 
     # Evaluasi
     try:
@@ -239,7 +243,7 @@ def save_scaler(scaler, name):
 
 def main():
     print("=" * 70)
-    print("TRAINING VERSI 5 (Normalisasi FIX + TimeSeriesSplit + Consistency Features)")
+    print("TRAINING VERSI 6 (Draw Model + Separate O/U Models)")
     print("=" * 70)
     print(f"Model Version: {MODEL_VERSION}")
     print(f"N Leagues: {N_LEAGUES}")
@@ -266,104 +270,90 @@ def main():
         "models": {}
     }
 
-    # === 1X2 BINARY HOME ===
+    # === 1X2 MULTICLASS (HOME/DRAW/AWAY) ===
     print("=" * 70)
-    print("Training 1X2 HOME")
+    print("Training 1X2 MULTICLASS (Home/Draw/Away) — FIX #3")
     print("=" * 70)
     
     for d in [train_df, test_df]:
         d["result_enc"] = d["result"].map({"H": 0, "D": 1, "A": 2})
-        d["is_home_win"] = (d["result"] == "H").astype(int)
-        d["is_away_win"] = (d["result"] == "A").astype(int)
 
-    X_train, y_train, cols = prepare_xy(train_df, "is_home_win")
-    X_test, y_test, _ = prepare_xy(test_df, "is_home_win")
-    
-    # FIX #1.2: Normalize dari training set saja
-    print("  [FIX #1.2] Normalizing features from training set...")
-    X_train, X_test, scaler_home = normalize_features(X_train, X_test, cols)
-    print("  ✓ Normalization applied (scaler fitted on training set)")
-    
-    model_home, acc_h, ll_h, cv_h, overfit_h = train_ensemble(X_train, y_train, X_test, y_test, "1x2_home")
-    
-    meta_h = {
-        "name": "model_1x2_home",
-        "model_version": MODEL_VERSION,
-        "trained_at": datetime.now().isoformat(),
-        "test_accuracy": float(acc_h),
-        "test_logloss": float(ll_h),
-        "cv_mean_accuracy": float(cv_h),
-        "overfitting_warning": bool(overfit_h),
-        "n_features": len(cols),
-        "features": cols,
-        "ensemble_weights": model_home["weights"],
-    }
-    save_model(model_home, "model_1x2_home", meta_h)
-    save_scaler(scaler_home, "model_1x2_home")
-    all_metadata["models"]["1x2_home"] = meta_h
-    results["1x2_home"] = {"acc": acc_h, "logloss": ll_h}
-
-    # === 1X2 BINARY AWAY ===
-    print("\n" + "=" * 70)
-    print("Training 1X2 AWAY")
-    print("=" * 70)
-    
-    X_train, y_train, cols = prepare_xy(train_df, "is_away_win")
-    X_test, y_test, _ = prepare_xy(test_df, "is_away_win")
+    X_train, y_train, cols = prepare_xy(train_df, "result_enc")
+    X_test, y_test, _ = prepare_xy(test_df, "result_enc")
     
     print("  [FIX #1.2] Normalizing features from training set...")
-    X_train, X_test, scaler_away = normalize_features(X_train, X_test, cols)
+    X_train, X_test, scaler_1x2 = normalize_features(X_train, X_test, cols)
     print("  ✓ Normalization applied (scaler fitted on training set)")
     
-    model_away, acc_a, ll_a, cv_a, overfit_a = train_ensemble(X_train, y_train, X_test, y_test, "1x2_away")
+    model_1x2, acc_1x2, ll_1x2, cv_1x2, overfit_1x2 = train_ensemble(
+        X_train, y_train, X_test, y_test, "1x2_multiclass", task="multiclass"
+    )
     
-    meta_a = {
-        "name": "model_1x2_away",
+    meta_1x2 = {
+        "name": "model_1x2_multiclass",
         "model_version": MODEL_VERSION,
         "trained_at": datetime.now().isoformat(),
-        "test_accuracy": float(acc_a),
-        "test_logloss": float(ll_a),
-        "cv_mean_accuracy": float(cv_a),
-        "overfitting_warning": bool(overfit_a),
+        "task": "multiclass",
+        "classes": ["Home", "Draw", "Away"],
+        "test_accuracy": float(acc_1x2),
+        "test_logloss": float(ll_1x2),
+        "cv_mean_accuracy": float(cv_1x2),
+        "overfitting_warning": bool(overfit_1x2),
         "n_features": len(cols),
         "features": cols,
-        "ensemble_weights": model_away["weights"],
+        "ensemble_weights": model_1x2["weights"],
     }
-    save_model(model_away, "model_1x2_away", meta_a)
-    save_scaler(scaler_away, "model_1x2_away")
-    all_metadata["models"]["1x2_away"] = meta_a
-    results["1x2_away"] = {"acc": acc_a, "logloss": ll_a}
+    save_model(model_1x2, "model_1x2_multiclass", meta_1x2)
+    save_scaler(scaler_1x2, "model_1x2_multiclass")
+    all_metadata["models"]["1x2_multiclass"] = meta_1x2
+    results["1x2_multiclass"] = {"acc": acc_1x2, "logloss": ll_1x2}
 
-    # === O/U ===
-    print("\n" + "=" * 70)
-    print("Training O/U (Over/Under 2.5)")
-    print("=" * 70)
+    # === O/U MODELS (SEPARATE FOR EACH LINE) ===
+    ou_lines = [
+        (1.5, "over_1_5", "ou_1_5"),
+        (2.5, "over_2_5", "ou_2_5"),
+        (3.5, "over_3_5", "ou_3_5"),
+    ]
     
-    X_train, y_train, cols = prepare_xy(train_df, "over_2_5")
-    X_test, y_test, _ = prepare_xy(test_df, "over_2_5")
-    
-    print("  [FIX #1.2] Normalizing features from training set...")
-    X_train, X_test, scaler_ou = normalize_features(X_train, X_test, cols)
-    print("  ✓ Normalization applied (scaler fitted on training set)")
-    
-    model_ou, acc_ou, ll_ou, cv_ou, overfit_ou = train_ensemble(X_train, y_train, X_test, y_test, "ou")
-    
-    meta_ou = {
-        "name": "model_ou",
-        "model_version": MODEL_VERSION,
-        "trained_at": datetime.now().isoformat(),
-        "test_accuracy": float(acc_ou),
-        "test_logloss": float(ll_ou),
-        "cv_mean_accuracy": float(cv_ou),
-        "overfitting_warning": bool(overfit_ou),
-        "n_features": len(cols),
-        "features": cols,
-        "ensemble_weights": model_ou["weights"],
-    }
-    save_model(model_ou, "model_ou", meta_ou)
-    save_scaler(scaler_ou, "model_ou")
-    all_metadata["models"]["ou"] = meta_ou
-    results["ou"] = {"acc": acc_ou, "logloss": ll_ou}
+    for line, label_col, model_name in ou_lines:
+        print("\n" + "=" * 70)
+        print(f"Training O/U {line} — FIX #5")
+        print("=" * 70)
+        
+        # Check if label exists
+        if label_col not in train_df.columns:
+            print(f"  ⚠️  Label {label_col} tidak ada di data, skip")
+            continue
+        
+        X_train, y_train, cols = prepare_xy(train_df, label_col)
+        X_test, y_test, _ = prepare_xy(test_df, label_col)
+        
+        print(f"  [FIX #1.2] Normalizing features from training set...")
+        X_train, X_test, scaler_ou = normalize_features(X_train, X_test, cols)
+        print("  ✓ Normalization applied (scaler fitted on training set)")
+        
+        model_ou, acc_ou, ll_ou, cv_ou, overfit_ou = train_ensemble(
+            X_train, y_train, X_test, y_test, model_name, task="binary"
+        )
+        
+        meta_ou = {
+            "name": f"model_ou_{int(line*10)}",
+            "model_version": MODEL_VERSION,
+            "trained_at": datetime.now().isoformat(),
+            "ou_line": float(line),
+            "task": "binary",
+            "test_accuracy": float(acc_ou),
+            "test_logloss": float(ll_ou),
+            "cv_mean_accuracy": float(cv_ou),
+            "overfitting_warning": bool(overfit_ou),
+            "n_features": len(cols),
+            "features": cols,
+            "ensemble_weights": model_ou["weights"],
+        }
+        save_model(model_ou, f"model_ou_{int(line*10)}", meta_ou)
+        save_scaler(scaler_ou, f"model_ou_{int(line*10)}")
+        all_metadata["models"][f"ou_{int(line*10)}"] = meta_ou
+        results[f"ou_{line}"] = {"acc": acc_ou, "logloss": ll_ou}
 
     # === BTTS ===
     print("\n" + "=" * 70)
@@ -377,7 +367,9 @@ def main():
     X_train, X_test, scaler_btts = normalize_features(X_train, X_test, cols)
     print("  ✓ Normalization applied (scaler fitted on training set)")
     
-    model_btts, acc_btts, ll_btts, cv_btts, overfit_btts = train_ensemble(X_train, y_train, X_test, y_test, "btts")
+    model_btts, acc_btts, ll_btts, cv_btts, overfit_btts = train_ensemble(
+        X_train, y_train, X_test, y_test, "btts", task="binary"
+    )
     
     meta_btts = {
         "name": "model_btts",
@@ -401,7 +393,7 @@ def main():
     print("TRAINING SUMMARY")
     print("=" * 70)
     for k, v in results.items():
-        print(f"  {k:10s}: acc={v['acc']:.4f}  logloss={v['logloss']:.4f}")
+        print(f"  {k:20s}: acc={v['acc']:.4f}  logloss={v['logloss']:.4f}")
 
     # Save master training log
     log_p = path("logs/training_log.json")
@@ -410,6 +402,8 @@ def main():
         json.dump(all_metadata, f, indent=2, default=str)
     print(f"\n✓ Master training log: {log_p}")
     print(f"✓ Model version: {MODEL_VERSION}")
+    print(f"✓ FIX #3: 1X2 multiclass model (Home/Draw/Away) trained")
+    print(f"✓ FIX #5: O/U 1.5, 2.5, 3.5 models trained separately")
     print(f"✓ Normalization scalers saved for prediction stage")
     print("\n✅ Training complete!")
 
