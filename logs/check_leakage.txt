@@ -1,3 +1,0 @@
-=== CEK LEAKAGE ===
-
-✓ Tidak ada leakage terdeteksi
