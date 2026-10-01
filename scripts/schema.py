@@ -2,9 +2,15 @@
 schema.py — Definisi skema kolom standar untuk matches_normalized.csv.
 Semua script fetch WAJIB menghasilkan kolom sesuai ini.
 
-Versi 2: perbaikan fragmentasi DataFrame di ensure_schema().
+Versi 3: menggunakan central league registry, hindari duplikasi & inconsistency.
 """
 import pandas as pd
+
+sys.path.append(str(Path(__file__).resolve().parent))
+from league_registry import LEAGUE_REGISTRY, FD_LEAGUE_CODES
+
+import sys
+from pathlib import Path
 
 
 # === Kolom wajib (target akhir) ===
@@ -64,24 +70,6 @@ FD_MAPPING = {
     "B365A":    "odds_away",
     "B365>2.5": "odds_over_2_5",
     "B365<2.5": "odds_under_2_5",
-}
-
-
-# === Mapping kode liga football-data.co.uk ===
-FD_LEAGUE_CODES = {
-    "EPL":          "E0",
-    "Championship": "E1",
-    "LaLiga":       "SP1",
-    "SerieA":       "I1",
-    "Bundesliga":   "D1",
-    "Ligue1":       "F1",
-    "Eredivisie":   "N1",
-    "PrimeiraLiga": "P1",
-    # LigaMX & Brasileirao tidak ada di football-data.co.uk
-    # → hanya dari API
-    "Belgian":      "B1",
-    "Turkish":      "T1",
-    "Greek":        "G1",
 }
 
 
