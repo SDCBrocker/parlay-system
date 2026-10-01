@@ -1,4 +1,0 @@
-match_id,date,league,season,home_team,away_team,home_goals,away_goals,source,odds_home,odds_draw,odds_away,odds_over_2_5,odds_under_2_5,odds_btts_yes,odds_btts_no
-LaLiga_20261011_Elche_CeltaVigo,2026-10-11 12:00:00,LaLiga,2026/27,Elche,Celta Vigo,,,api,2.76,3.19,2.55,2.03,1.76,,
-EPL_20261011_CrystalPalace_NottinghamForest,2026-10-11 13:00:00,EPL,2026/27,Crystal Palace,Nottingham Forest,,,api,2.62,3.3,2.66,2.02,1.77,,
-EPL_20261011_HullCity_Everton,2026-10-11 13:00:00,EPL,2026/27,Hull City,Everton,,,api,3.65,3.34,2.05,2.11,1.71,,
